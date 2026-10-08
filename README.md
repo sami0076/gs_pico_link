@@ -124,11 +124,71 @@ four roles exist in one build tree and switching roles is a reflash rather than 
 reconfigure. There is no edit-this-line-back step that could flash a Pico with
 the wrong job.
 
-To flash: hold BOOTSEL while plugging the Pico in, then copy the `.uf2` onto the
-drive that appears.
-
 Build a single role with `ninja -C ~/build/gs gs_rx`. Build for a different board
 with `-DPICO_BOARD=...`; it defaults to `pico2_w`.
+
+### Smoke test: read a Pico over USB
+
+This checks one thing only - that a Pico boots, enumerates as a USB serial port
+and the laptop can read its output. **No radio is needed**; the placeholder
+`main`s never touch SPI. One Pico and a data-capable USB cable is the whole rig.
+
+1. **Flash.** Hold BOOTSEL while plugging the Pico in. It appears as a drive
+   called `RPI-RP2`. Copy `gs_rx.uf2` onto it. The drive disappears and the Pico
+   reboots into the program.
+
+2. **Find the port.** On Windows:
+
+   ```powershell
+   python -m serial.tools.list_ports -v
+   ```
+
+   The Pico shows up as a USB Serial Device on some `COMx`. If no port appears at
+   all, see the troubleshooting notes below.
+
+3. **Read it.**
+
+   ```powershell
+   python -m serial.tools.miniterm COM5 115200
+   ```
+
+   Substitute your port. The baud rate is ignored for USB CDC - it is a virtual
+   serial port, so any number works. Quit with `Ctrl-]`.
+
+Expected output, appearing immediately and then once a second forever:
+
+```
+=== gs_pico_link gs_rx 9f3a1c2 ===
+[rx] placeholder build: no radio touched, USB serial only
+[rx] would use 915.0 MHz  BW 125.0 kHz  SF7  CR 4/5  sync 0x12
+[rx] SPI0  SCK GP18  MOSI GP19  MISO GP16  CS GP17  RST GP20  DIO0 GP21
+[rx] heartbeat every 1000 ms
+[rx] alive n=1 up=1234 ms
+[rx] alive n=2 up=2234 ms
+```
+
+The `alive` counter is the point of the test: a banner alone could be a stale
+buffer, but a counter that keeps climbing proves the link is live.
+
+The hash in the banner is whatever `git describe` saw at your last `cmake` run,
+with `-dirty` appended if the tree had uncommitted changes. It is captured when
+you configure, not when you build, so re-run `cmake` if you want it refreshed.
+
+`gs_rx` waits forever for you to open the port, so you can flash it, walk away,
+and still catch the banner whenever you connect. The three `gs_tx*` builds wait
+only 3 s and then start regardless, because a transmitter normally runs off a
+power bank with nothing watching - flash one of those and you will likely miss
+its banner but still see the heartbeat.
+
+#### If it doesn't work
+
+| What you see | What it means |
+| --- | --- |
+| No `COMx` at all | Not a data cable (charge-only cables are common), or the `.uf2` never copied - re-check that `RPI-RP2` disappeared after the copy |
+| Port appears, no text | Expected on a `gs_tx*` build if you connected after its 3 s window. The heartbeat should still arrive within a second |
+| `could not open port` / access denied | Another program holds it. Close other terminals, VS Code serial monitors, Arduino IDE |
+| `python` not recognised | Covered under Development environment above: the PATH change needs a full restart of Windows Terminal, or call the interpreter by full path |
+| Garbage characters | Wrong port - you have opened some other device |
 
 ### Warnings
 
@@ -141,6 +201,11 @@ left alone. If you want to confirm the split:
 ```bash
 ninja -C ~/build/gs 2>&1 | grep ': warning' | grep firmware/src/   # should print nothing
 ```
+
+One more piece of expected noise: the first `cmake` run in a fresh build
+directory prints a `CMake Warning` from the SDK's `Findpicotool.cmake` saying
+no installed picotool was found and it is building one from source. That is the
+SDK talking about its own tooling, not a problem with this project.
 
 ## A note on what is and isn't verified
 

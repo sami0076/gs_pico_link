@@ -33,6 +33,39 @@ project(gs_pico_link C CXX ASM)
 pico_sdk_init()
 
 # ----------------------------------------------------------------------------
+# Build stamp for the startup banner (spec 5.3 step 3)
+# ----------------------------------------------------------------------------
+# So a Pico you found in a drawer can tell you which build is on it.
+#
+# Two wrinkles worth knowing:
+#
+#  - safe.directory: we build in WSL but the repo lives on a Windows drive under
+#    /mnt/c, so the checkout is owned by a different uid than the one running
+#    git. Git calls that "dubious ownership" and refuses. Passing safe.directory
+#    for this one invocation fixes it without touching anyone's global config.
+#  - Captured at CONFIGURE time, not build time. Commit and then only run ninja
+#    and this string is from the last cmake run. Re-run cmake to refresh it.
+get_filename_component(GS_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}" DIRECTORY)
+
+execute_process(
+    COMMAND git -c "safe.directory=${GS_REPO_ROOT}" -C "${GS_REPO_ROOT}"
+            describe --always --dirty --tags
+    OUTPUT_VARIABLE GS_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_VARIABLE GS_VERSION_ERR
+    RESULT_VARIABLE GS_VERSION_RESULT)
+
+if(NOT GS_VERSION_RESULT EQUAL 0 OR NOT GS_VERSION)
+    set(GS_VERSION "unknown")
+    # Loud on purpose: a banner reading "unknown" should not be a silent mystery.
+    message(WARNING
+        "Could not read a version from git, banner will say \"unknown\".\n"
+        "  git said: ${GS_VERSION_ERR}")
+endif()
+
+message(STATUS "gs_pico_link version stamp: ${GS_VERSION}")
+
+# ----------------------------------------------------------------------------
 # RadioLib
 # ----------------------------------------------------------------------------
 # Wired up the way RadioLib's own examples/NonArduino/Pico does it: build the
@@ -63,6 +96,8 @@ function(gs_add_role target)
 
     target_compile_definitions(${target} PRIVATE
         RADIOLIB_BUILD_RPI_PICO
+        GS_TARGET_NAME=\"${target}\"
+        GS_VERSION=\"${GS_VERSION}\"
         ${ARG_DEFINES})
 
     # Strict warnings for OUR code. Deliberately per-target and not a global
