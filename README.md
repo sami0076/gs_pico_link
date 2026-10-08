@@ -18,9 +18,10 @@ That keeps the embedded code simple and the tricky parts testable on a PC.
 
 | Path | What's in it | Status |
 | --- | --- | --- |
-| `firmware/src/` | C++ for the Picos (receiver and transmitter) | not started |
+| `firmware/CMakeLists.txt` | Builds the four Pico roles | done |
+| `firmware/src/` | C++ for the Picos (receiver and transmitter) | `config.hpp` done; `main`s are placeholders |
 | `firmware/host_tests/` | Tests for the pure-logic C++, run on the laptop | not started |
-| `firmware/lib/RadioLib/` | The LoRa radio library (git submodule) | not started |
+| `firmware/lib/RadioLib/` | The LoRa radio library (git submodule) | pinned at 7.8.1 |
 | `laptop/gs/` | The `gs` Python package: parsing, math, CLI | not started |
 | `laptop/tests/` | pytest suite | not started |
 | `docs/HARDWARE_BRINGUP.md` | Bench checklist for once the wiring is done | not started |
@@ -33,8 +34,8 @@ That keeps the embedded code simple and the tricky parts testable on a PC.
 - **Adafruit RFM95W** 915 MHz LoRa breakout (Semtech SX1276) x1 per Pico
 - Optional 3.3 V NMEA GPS module at 9600 baud on the transmitter
 
-Wiring table lives in `GS_PICO_LINK_SPEC.md` section 3.2, and will be mirrored in
-`firmware/src/config.hpp` once that exists.
+Wiring table lives in `GS_PICO_LINK_SPEC.md` section 3.2, mirrored in
+`firmware/src/config.hpp`.
 
 ## Development environment
 
@@ -98,9 +99,48 @@ Windows Terminal tabs inherit a stale PATH, so quit it completely and reopen.
 
 ## Build and run
 
-Filled in as each piece lands. Build output goes to a directory **inside WSL**,
-not here, because this folder is synced by OneDrive and a build tree is thousands
-of object files.
+Build output goes to a directory **inside WSL**, not here, because this folder is
+synced by OneDrive and a build tree is thousands of object files.
+
+```bash
+# in WSL Ubuntu, from anywhere
+cmake -S /mnt/c/Users/samis/OneDrive/Desktop/Sami_GS_Software_Testing/firmware \
+      -B ~/build/gs -G Ninja
+ninja -C ~/build/gs
+```
+
+That produces four `.uf2` files in `~/build/gs`, one per role:
+
+| Target | Role |
+| --- | --- |
+| `gs_rx.uf2` | Receiver: listens and prints one text line per packet |
+| `gs_tx.uf2` | Transmitter, simulated GGA (the normal bench transmitter) |
+| `gs_tx_diag.uf2` | Transmitter, diagnostic counter instead of a position |
+| `gs_tx_gps.uf2` | Transmitter, forwards GGA from a real GPS on UART0 |
+
+**The role is the target, not a `#define`.** The spec allowed the diagnostic
+transmitter to be either a CMake option or its own target; it is a target, so all
+four roles exist in one build tree and switching roles is a reflash rather than a
+reconfigure. There is no edit-this-line-back step that could flash a Pico with
+the wrong job.
+
+To flash: hold BOOTSEL while plugging the Pico in, then copy the `.uf2` onto the
+drive that appears.
+
+Build a single role with `ninja -C ~/build/gs gs_rx`. Build for a different board
+with `-DPICO_BOARD=...`; it defaults to `pico2_w`.
+
+### Warnings
+
+Project sources build with `-Wall -Wextra` and are held to **zero warnings**.
+RadioLib is compiled as its own target with its own flags, so the warnings it
+emits from `Module.cpp` (84 at the time of writing, all `-Wstringop-overflow=`)
+are the library's, not ours. The spec says not to patch the library, so those are
+left alone. If you want to confirm the split:
+
+```bash
+ninja -C ~/build/gs 2>&1 | grep ': warning' | grep firmware/src/   # should print nothing
+```
 
 ## A note on what is and isn't verified
 

@@ -62,9 +62,9 @@ constexpr uint GPS_BAUD   = 9600;
 // These must be IDENTICAL on both ends. If even one differs, the receiver hears
 // nothing at all - there is no warning and no partial reception. They match last
 // year's flight link, so this receiver can still pick up last year's hardware.
-inline SX1276::ConfigLoRa_t lora_config()
+inline ConfigLoRa_t lora_config()
 {
-    SX1276::ConfigLoRa_t cfg;
+    ConfigLoRa_t cfg;
     cfg.frequency       = 915.0f;  // MHz
     cfg.bandwidth       = 125.0f;  // kHz
     cfg.spreadingFactor = 7;
