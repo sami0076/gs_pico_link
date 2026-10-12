@@ -20,40 +20,52 @@
 // The constants below are GPIO numbers. The physical pin is in the comment so
 // you can count it out on the board while wiring.
 //
+// The radio is not wired straight to the Pico. It plugs into the team's
+// gs_pcb_v1 breakout board, which decides which GPIO reaches which radio pin.
+// So the board's pinout sheet is the authority here, not the RFM95W datasheet.
+//
+// Source: "GS 25: Pico Breakout Pinout", RocketryVT/Ground-Station.
+//
 //   RFM95W        Pico 2 W        physical pin
 //   ----------    ------------    ------------
-//   VIN           3V3(OUT)        36
-//   GND           GND             38
 //   SCK           GP18            24
 //   MOSI          GP19            25
-//   MISO          GP16            21
-//   CS            GP17            22
-//   RST           GP20            26
-//   G0 (DIO0)     GP21            27
-//   G1 (DIO1)     GP22            29
-//   EN, G2-G5     not connected
+//   MISO          GP20            26
+//   CS            GP21            27
+//   RST           GP22            29
+//   G0 (DIO0)     GP17            22
+//   EN            GP16            21
+//   G1 (DIO1)     not routed on this board
 //
-// Verified against the official Pico 2 W pinout (Figure 2 of the datasheet) and
-// the RP2350 GPIO function table in the SDK headers. See docs/HARDWARE_BRINGUP.md.
+// Power is not listed above because the Pico does not supply it. Every breakout
+// is fed by the board's own 3V3 regulator module, which runs off a 5V regulator
+// on the battery.
+//
+// The board calls this radio "LoRa0" and puts it on the right-hand SPI header.
+// There is a second radio ("LoRa1", the 433 MHz backup) on SPI1 that this
+// project does not use. See docs/HARDWARE_BRINGUP.md.
 
 // Not constexpr: the SDK's spi0 macro casts a fixed address, which C++ won't
 // evaluate at compile time. "inline const" gives us the same safety here.
 inline spi_inst_t *const LORA_SPI = spi0;
 
-constexpr uint PIN_MISO = 16;  // pin 21, SPI0 RX   - data from radio to Pico
-constexpr uint PIN_CS   = 17;  // pin 22            - RadioLib drives this itself
 constexpr uint PIN_SCK  = 18;  // pin 24, SPI0 SCK  - clock
 constexpr uint PIN_MOSI = 19;  // pin 25, SPI0 TX   - data from Pico to radio
-constexpr uint PIN_RST  = 20;  // pin 26            - reset, active LOW
-constexpr uint PIN_DIO0 = 21;  // pin 27            - "packet finished" interrupt
-constexpr uint PIN_DIO1 = 22;  // pin 29            - wired but unused for now
+constexpr uint PIN_MISO = 20;  // pin 26, SPI0 RX   - data from radio to Pico
+constexpr uint PIN_CS   = 21;  // pin 27, SPI0 CSn  - RadioLib drives this itself
+constexpr uint PIN_RST  = 22;  // pin 29            - reset, active LOW
+constexpr uint PIN_DIO0 = 17;  // pin 22            - "packet finished" interrupt
+constexpr uint PIN_EN   = 16;  // pin 21            - radio enable
 
 // GPS module. Only the gs_tx_gps build uses these.
 // Note the crossover: the GPS's TX goes to the Pico's RX, and vice versa.
+//
+// UART0 can appear on two different pin pairs. The board puts it on GP12/GP13
+// because GP0/GP1 are taken by the I2C sensors.
 inline uart_inst_t *const GPS_UART = uart0;
 
-constexpr uint PIN_GPS_TX = 0;  // pin 1, UART0 TX -> GPS RX
-constexpr uint PIN_GPS_RX = 1;  // pin 2, UART0 RX <- GPS TX
+constexpr uint PIN_GPS_TX = 12;  // pin 16, UART0 TX -> GPS RX
+constexpr uint PIN_GPS_RX = 13;  // pin 17, UART0 RX <- GPS TX
 constexpr uint GPS_BAUD   = 9600;
 
 // ============================================================================
