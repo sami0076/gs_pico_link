@@ -8,6 +8,10 @@
 #include "hardware/uart.h"
 #include "pico/stdlib.h"
 
+// Steps per degree, travel limits and pulse timing for the motors. Kept in its
+// own header because it must stay free of Pico headers to be host-testable.
+#include "motor_config.hpp"
+
 // ============================================================================
 // 1. Wiring
 // ============================================================================
