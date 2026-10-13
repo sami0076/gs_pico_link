@@ -33,3 +33,4 @@ function(gs_add_host_test name)
 endfunction()
 
 gs_add_host_test(test_motion_profile ../src/motion_profile.cpp)
+gs_add_host_test(test_line_reader ../src/line_reader.cpp)
