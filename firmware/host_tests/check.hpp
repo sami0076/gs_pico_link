@@ -34,10 +34,27 @@ inline void check_report_eq(long got, long want, const char *expr,
     }
 }
 
+// For timings, which land a microsecond either side depending on rounding.
+inline void check_report_near(long got, long want, long tol, const char *expr,
+                              const char *file, int line)
+{
+    g_checks_run++;
+    const long diff = (got > want) ? (got - want) : (want - got);
+    if (diff > tol) {
+        g_checks_failed++;
+        printf("FAIL  %s:%d  %s\n        got %ld, want %ld +/- %ld\n",
+               file, line, expr, got, want, tol);
+    }
+}
+
 #define CHECK(cond) check_report((cond), #cond, __FILE__, __LINE__)
 
 #define CHECK_EQ(got, want) \
     check_report_eq((long)(got), (long)(want), #got " == " #want, __FILE__, __LINE__)
+
+#define CHECK_NEAR(got, want, tol)                                        \
+    check_report_near((long)(got), (long)(want), (long)(tol),             \
+                      #got " ~= " #want, __FILE__, __LINE__)
 
 // Print the tally and return the process exit code: 0 means everything passed.
 inline int test_summary()

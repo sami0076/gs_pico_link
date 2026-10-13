@@ -228,6 +228,144 @@ static void test_the_speed_sweep_never_leaves_the_range()
     CHECK_EQ(pos, mdeg_to_steps(AZ_SPEC, 90000));
 }
 
+// ============================================================================
+// Step timing
+// ============================================================================
+
+// The whole written procedure runs at 5 deg/sec, which is exactly the speed
+// moves start at. So those moves have no ramp: every step is the same length,
+// and the move takes exactly angle/speed seconds. This is the property that
+// keeps the test data table easy to check by hand.
+static void test_five_deg_per_sec_has_no_ramp()
+{
+    Move m{};
+    const int32_t at_90 = mdeg_to_steps(AZ_SPEC, 90000);
+    CHECK(plan_move(AZ_SPEC, at_90, 45000, 5000, &m) == PlanResult::Ok);
+
+    CHECK_EQ(m.n_ramp, 0);
+    CHECK(!m.triangular);
+
+    // 5 deg/sec on azimuth is 253.97 steps/sec, so 3937 us per step.
+    for (uint32_t i = 0; i < m.n_steps; i++) {
+        CHECK_NEAR(interval_us(m, i), 3937, 2);
+    }
+
+    // 45 deg at 5 deg/sec is 9 seconds.
+    CHECK_NEAR(m.est_us, 9000000, 20000);
+
+    // Elevation at the same speed: 158.73 steps/sec, 6300 us per step.
+    Move e{};
+    CHECK(plan_move(EL_SPEC, 0, 45000, 5000, &e) == PlanResult::Ok);
+    CHECK_EQ(e.n_ramp, 0);
+    CHECK_NEAR(interval_us(e, 0), 6300, 2);
+    CHECK_NEAR(e.est_us, 9000000, 20000);
+}
+
+// Above the starting speed the move ramps: slow at the ends, fast in the
+// middle, and symmetric.
+static void test_a_fast_move_ramps_up_and_down()
+{
+    Move m{};
+    CHECK(plan_move(AZ_SPEC, 0, 180000, 45000, &m) == PlanResult::Ok);
+
+    CHECK(m.n_ramp > 0);
+    CHECK(!m.triangular);  // 180 deg is plenty of room at 45 deg/sec
+
+    // First and last steps run at the starting speed, 3937 us.
+    CHECK_NEAR(interval_us(m, 0), 3937, 2);
+    CHECK_NEAR(interval_us(m, m.n_steps - 1), 3937, 2);
+
+    // The middle runs at the commanded 45 deg/sec = 2285.7 steps/sec = 437 us.
+    CHECK_NEAR(interval_us(m, m.n_steps / 2), 437, 2);
+
+    // Speeding up means the gaps get shorter, then stay level, then grow.
+    for (uint32_t i = 1; i < m.n_ramp; i++) {
+        CHECK(interval_us(m, i) <= interval_us(m, i - 1));
+    }
+    for (uint32_t i = m.n_steps - m.n_ramp + 1; i < m.n_steps; i++) {
+        CHECK(interval_us(m, i) >= interval_us(m, i - 1));
+    }
+
+    // The ramp is symmetric: step i from the start matches step i from the end.
+    for (uint32_t i = 0; i < m.n_ramp; i++) {
+        CHECK_EQ(interval_us(m, i), interval_us(m, m.n_steps - 1 - i));
+    }
+}
+
+// A move too short to reach the commanded speed turns into a triangle: it
+// speeds up to halfway, then immediately starts slowing down.
+static void test_a_short_fast_move_is_triangular()
+{
+    Move m{};
+    // 1 degree at full speed. There is nowhere near enough room to get there.
+    CHECK(plan_move(AZ_SPEC, 0, 1000, 90000, &m) == PlanResult::Ok);
+
+    CHECK(m.triangular);
+    CHECK(m.n_ramp <= m.n_steps / 2);
+
+    // It never actually reaches the commanded speed.
+    const float commanded_sps = 90.0f * 3200.0f / 63.0f;
+    CHECK(m.v_cruise_sps < commanded_sps);
+
+    // Still symmetric, still slowest at both ends.
+    CHECK_EQ(interval_us(m, 0), interval_us(m, m.n_steps - 1));
+    CHECK(interval_us(m, m.n_steps / 2) <= interval_us(m, 0));
+}
+
+// Asking for less than the starting speed must run at the slower speed, not
+// jump up to 5 deg/sec.
+static void test_a_slow_command_is_honoured()
+{
+    Move m{};
+    CHECK(plan_move(AZ_SPEC, 0, 10000, 1000, &m) == PlanResult::Ok);
+
+    CHECK_EQ(m.n_ramp, 0);
+    CHECK(!m.triangular);
+
+    // 1 deg/sec on azimuth is 50.79 steps/sec, so 19687 us per step.
+    CHECK_NEAR(interval_us(m, 0), 19687, 5);
+
+    // 10 deg at 1 deg/sec is 10 seconds.
+    CHECK_NEAR(m.est_us, 10000000, 30000);
+}
+
+// Whatever is asked for, no interval may land on a sanity rail. Reaching one
+// would mean the maths had gone wrong.
+static void test_no_interval_hits_a_rail()
+{
+    const int32_t speeds[] = {100, 1000, 5000, 20000, 45000, 90000};
+    const int32_t angles[] = {20, 1000, 45000, 180000, 360000};
+
+    for (int32_t speed : speeds) {
+        for (int32_t angle : angles) {
+            Move m{};
+            if (plan_move(AZ_SPEC, 0, angle, speed, &m) != PlanResult::Ok) {
+                continue;
+            }
+            for (uint32_t i = 0; i < m.n_steps; i++) {
+                const uint32_t us = interval_us(m, i);
+                CHECK(us > MIN_INTERVAL_US && us < MAX_INTERVAL_US);
+            }
+        }
+    }
+}
+
+// The fastest and slowest cases, checked against the numbers worked out from
+// the gear ratios.
+static void test_the_extremes()
+{
+    Move m{};
+
+    // 90 deg/sec on azimuth is 4571.4 steps/sec -> 218 us.
+    CHECK(plan_move(AZ_SPEC, 0, 360000, 90000, &m) == PlanResult::Ok);
+    CHECK_NEAR(interval_us(m, m.n_steps / 2), 218, 2);
+
+    // 0.1 deg/sec on elevation is 3.17 steps/sec -> 315000 us.
+    Move e{};
+    CHECK(plan_move(EL_SPEC, 0, 45000, 100, &e) == PlanResult::Ok);
+    CHECK_NEAR(interval_us(e, 0), 315000, 100);
+}
+
 int main()
 {
     test_azimuth_angles();
@@ -243,5 +381,12 @@ int main()
     test_speed_must_be_in_range();
     test_an_angle_too_small_to_move_is_refused();
     test_the_speed_sweep_never_leaves_the_range();
+
+    test_five_deg_per_sec_has_no_ramp();
+    test_a_fast_move_ramps_up_and_down();
+    test_a_short_fast_move_is_triangular();
+    test_a_slow_command_is_honoured();
+    test_no_interval_hits_a_rail();
+    test_the_extremes();
     return test_summary();
 }

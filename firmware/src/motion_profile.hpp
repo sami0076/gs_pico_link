@@ -44,6 +44,19 @@ struct Move {
     int32_t from_mdeg;   // where the axis is now
     int32_t to_mdeg;     // where it will really stop, after rounding to steps
     int32_t speed_mdps;  // as commanded
+
+    // --- the speed plan, worked out by plan_move ---------------------------
+    //
+    // The axis speeds up, holds a steady speed, then slows down again by the
+    // same amount. Speeds here are in steps per second, because that is what
+    // decides the gap between one pulse and the next.
+    uint32_t n_steps;      // how many steps in total (never negative)
+    uint32_t n_ramp;       // steps spent speeding up, and again slowing down
+    float v_start_sps;     // speed at the first and last step
+    float v_cruise_sps;    // speed in the middle
+    float accel_sps2;      // how fast the speed changes
+    bool triangular;       // true if the move ends before reaching full speed
+    uint32_t est_us;       // roughly how long the whole move will take
 };
 
 // Check a command and work out the move it describes.
@@ -55,6 +68,13 @@ struct Move {
 // delta_mdeg is relative and signed, because that is how the test procedure is
 // written ("+45, then -45") and what the operator types.
 //
-// Nothing here moves a motor. It only decides whether the move is allowed.
+// Nothing here moves a motor. It only decides whether the move is allowed,
+// and works out the speed plan if it is.
 PlanResult plan_move(const AxisSpec &axis, int32_t pos_steps,
                      int32_t delta_mdeg, int32_t speed_mdps, Move *out);
+
+// How long to wait before taking step number i, counting from 0.
+//
+// This is the one function the motor loop calls over and over, so it answers
+// from the plan alone and keeps no state of its own.
+uint32_t interval_us(const Move &move, uint32_t i);
