@@ -68,6 +68,41 @@ constexpr uint PIN_GPS_TX = 12;  // pin 16, UART0 TX -> GPS RX
 constexpr uint PIN_GPS_RX = 13;  // pin 17, UART0 RX <- GPS TX
 constexpr uint GPS_BAUD   = 9600;
 
+// Stepper motor drivers. Only the gs_motor build uses these.
+//
+// Two StepperOnline CL57TE drives, one per axis. Each takes two signals:
+//   PUL - one pulse per step
+//   DIR - which way to turn
+//
+// The board names them "Servo 1" (top) and "Servo 2" (bottom). Servo 1 is the
+// azimuth axis and Servo 2 is elevation.
+//
+// THESE SIGNALS ARE ACTIVE LOW. The driver's PUL+ and DIR+ are tied to +5V on
+// the board, so the Pico sinks current through an optocoupler instead of
+// driving the line high. In practice that means:
+//
+//   PUL idles HIGH and is pulled LOW to make one step.
+//   DIR LOW means the positive direction.
+//
+// Do not switch these pins to open-drain or to inputs to "fix" a signal
+// problem. Pico GPIOs are not 5V tolerant, and releasing the pin lets the 5V
+// rail push current back into it through the optocoupler.
+//
+//   driver        Pico 2 W    physical pin   wire
+//   ------------  ----------  -------------  -----
+//   Servo 1 PUL-  GP4         6              red
+//   Servo 1 DIR-  GP5         7              red
+//   Servo 2 PUL-  GP6         9              blue
+//   Servo 2 DIR-  GP7         10             blue
+//   all PUL+/DIR+ +5V, top two pins of each screw terminal, green
+//
+// ENA and ALM are not connected. The Pico cannot disable a drive and cannot
+// tell when one faults - watch the red LED on the driver instead.
+constexpr uint PIN_AZ_PUL = 4;  // pin 6             - azimuth step
+constexpr uint PIN_AZ_DIR = 5;  // pin 7             - azimuth direction
+constexpr uint PIN_EL_PUL = 6;  // pin 9             - elevation step
+constexpr uint PIN_EL_DIR = 7;  // pin 10            - elevation direction
+
 // ============================================================================
 // 2. Radio settings
 // ============================================================================
