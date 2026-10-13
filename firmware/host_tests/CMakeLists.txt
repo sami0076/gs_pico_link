@@ -35,3 +35,5 @@ endfunction()
 gs_add_host_test(test_motion_profile ../src/motion_profile.cpp)
 gs_add_host_test(test_line_reader ../src/line_reader.cpp)
 gs_add_host_test(test_motor_cmd ../src/motor_cmd.cpp)
+gs_add_host_test(test_motor_reply ../src/motor_reply.cpp ../src/motor_cmd.cpp
+                                  ../src/motion_profile.cpp)
