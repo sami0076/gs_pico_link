@@ -24,3 +24,37 @@ int32_t mdeg_to_steps(const AxisSpec &axis, int32_t mdeg);
 // 45.006 deg. That difference is the honest answer and belongs in the test
 // data, which is why it is reported rather than hidden.
 int32_t steps_to_mdeg(const AxisSpec &axis, int32_t steps);
+
+// ============================================================================
+// Working out whether a move is allowed
+// ============================================================================
+
+// Why a move was refused, or Ok if it was not.
+enum class PlanResult {
+    Ok,
+    BadSpeed,    // speed outside SPEED_MIN_MDPS..SPEED_MAX_MDPS
+    OutOfRange,  // the move would finish outside the axis's soft limits
+    NoMovement,  // the angle is so small it rounds to zero steps
+};
+
+// What a move will do. Filled in even when the move is refused, so an error
+// message can say where the move would have ended up.
+struct Move {
+    int32_t steps;       // signed - how many steps, and which way
+    int32_t from_mdeg;   // where the axis is now
+    int32_t to_mdeg;     // where it will really stop, after rounding to steps
+    int32_t speed_mdps;  // as commanded
+};
+
+// Check a command and work out the move it describes.
+//
+// pos_steps is where the axis is now, counted in steps rather than degrees.
+// Steps are what the machine actually does, so counting them is exact; storing
+// an angle instead would re-round on every move and drift.
+//
+// delta_mdeg is relative and signed, because that is how the test procedure is
+// written ("+45, then -45") and what the operator types.
+//
+// Nothing here moves a motor. It only decides whether the move is allowed.
+PlanResult plan_move(const AxisSpec &axis, int32_t pos_steps,
+                     int32_t delta_mdeg, int32_t speed_mdps, Move *out);

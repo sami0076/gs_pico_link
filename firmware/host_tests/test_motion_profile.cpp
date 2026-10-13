@@ -110,6 +110,124 @@ static void test_ratios_match_the_gears()
     CHECK_EQ(mdeg_to_steps(EL_SPEC, 1000000), 31746);
 }
 
+// ============================================================================
+// plan_move
+// ============================================================================
+
+// The first two commands of the written test procedure: +45 then -45.
+static void test_the_procedures_first_commands()
+{
+    Move m{};
+
+    // Start at 90 deg, which is where the operator is told to zero azimuth.
+    const int32_t at_90 = mdeg_to_steps(AZ_SPEC, 90000);
+
+    CHECK(plan_move(AZ_SPEC, at_90, 45000, 5000, &m) == PlanResult::Ok);
+    CHECK_EQ(m.steps, 2286);
+    CHECK_EQ(m.speed_mdps, 5000);
+
+    CHECK(plan_move(AZ_SPEC, at_90, -45000, 5000, &m) == PlanResult::Ok);
+    CHECK_EQ(m.steps, -2286);
+
+    // And the same on elevation, from a safe starting point.
+    const int32_t el_at_20 = mdeg_to_steps(EL_SPEC, 20000);
+    CHECK(plan_move(EL_SPEC, el_at_20, 10000, 5000, &m) == PlanResult::Ok);
+    CHECK(plan_move(EL_SPEC, el_at_20, -10000, 5000, &m) == PlanResult::Ok);
+}
+
+// A move must be refused outright, never quietly shortened. A clamped move
+// would put a different angle on the gimbal than the one written in the data
+// table, and nobody would find out.
+static void test_moves_past_the_limit_are_refused()
+{
+    Move m{};
+
+    // Azimuth is allowed 0..360. Going below zero from the start is refused.
+    CHECK(plan_move(AZ_SPEC, 0, -1000, 5000, &m) == PlanResult::OutOfRange);
+
+    // Past the top end.
+    const int32_t at_350 = mdeg_to_steps(AZ_SPEC, 350000);
+    CHECK(plan_move(AZ_SPEC, at_350, 20000, 5000, &m) == PlanResult::OutOfRange);
+
+    // Elevation ships clamped to 0..45.
+    const int32_t el_at_40 = mdeg_to_steps(EL_SPEC, 40000);
+    CHECK(plan_move(EL_SPEC, el_at_40, 10000, 5000, &m) == PlanResult::OutOfRange);
+    CHECK(plan_move(EL_SPEC, 0, -1000, 5000, &m) == PlanResult::OutOfRange);
+
+    // The refused move still reports where it would have gone, so the error
+    // message can show it.
+    CHECK(plan_move(EL_SPEC, el_at_40, 10000, 5000, &m) == PlanResult::OutOfRange);
+    CHECK(m.to_mdeg > 45000);
+}
+
+// Landing exactly on a limit is legal. This only works because the check is
+// done in steps - see the comment in plan_move.
+static void test_landing_exactly_on_a_limit_is_allowed()
+{
+    Move m{};
+
+    // 0 -> 360 on azimuth is the full allowed sweep.
+    CHECK(plan_move(AZ_SPEC, 0, 360000, 5000, &m) == PlanResult::Ok);
+    CHECK_EQ(m.steps, 18286);
+
+    // One more step than that is not.
+    CHECK(plan_move(AZ_SPEC, 1, 360000, 5000, &m) == PlanResult::OutOfRange);
+
+    // 0 -> 45 on elevation is its full allowed sweep.
+    CHECK(plan_move(EL_SPEC, 0, 45000, 5000, &m) == PlanResult::Ok);
+    CHECK_EQ(m.steps, 1429);
+    CHECK(plan_move(EL_SPEC, 1, 45000, 5000, &m) == PlanResult::OutOfRange);
+}
+
+static void test_speed_must_be_in_range()
+{
+    Move m{};
+    const int32_t at_90 = mdeg_to_steps(AZ_SPEC, 90000);
+
+    CHECK(plan_move(AZ_SPEC, at_90, 1000, 0, &m) == PlanResult::BadSpeed);
+    CHECK(plan_move(AZ_SPEC, at_90, 1000, -5000, &m) == PlanResult::BadSpeed);
+    CHECK(plan_move(AZ_SPEC, at_90, 1000, 90001, &m) == PlanResult::BadSpeed);
+
+    // Both ends of the allowed range are fine.
+    CHECK(plan_move(AZ_SPEC, at_90, 1000, SPEED_MIN_MDPS, &m) == PlanResult::Ok);
+    CHECK(plan_move(AZ_SPEC, at_90, 1000, SPEED_MAX_MDPS, &m) == PlanResult::Ok);
+}
+
+// An angle smaller than half a step cannot be performed. Saying so is better
+// than reporting a move that did nothing.
+static void test_an_angle_too_small_to_move_is_refused()
+{
+    Move m{};
+    const int32_t at_90 = mdeg_to_steps(AZ_SPEC, 90000);
+
+    // Half a step on azimuth is about 0.0098 deg.
+    CHECK(plan_move(AZ_SPEC, at_90, 5, 5000, &m) == PlanResult::NoMovement);
+    CHECK(plan_move(AZ_SPEC, at_90, 0, 5000, &m) == PlanResult::NoMovement);
+    CHECK(plan_move(AZ_SPEC, at_90, -5, 5000, &m) == PlanResult::NoMovement);
+
+    // Just over half a step is fine.
+    CHECK(plan_move(AZ_SPEC, at_90, 15, 5000, &m) == PlanResult::Ok);
+    CHECK_EQ(m.steps, 1);
+}
+
+// The speed sweep alternates +180 and -180 so azimuth never approaches its
+// limits. Starting from 90 deg, this must hold forever.
+static void test_the_speed_sweep_never_leaves_the_range()
+{
+    Move m{};
+    int32_t pos = mdeg_to_steps(AZ_SPEC, 90000);
+
+    for (int i = 0; i < 50; i++) {
+        const int32_t delta = (i % 2 == 0) ? 180000 : -180000;
+        CHECK(plan_move(AZ_SPEC, pos, delta, 5000, &m) == PlanResult::Ok);
+        pos += m.steps;
+        CHECK(pos >= 0 && pos <= mdeg_to_steps(AZ_SPEC, 360000));
+    }
+
+    // And it comes back to exactly where it started, with no drift.
+    CHECK_EQ(pos, mdeg_to_steps(AZ_SPEC, 90000));
+}
+
 int main()
 {
     test_azimuth_angles();
@@ -118,5 +236,12 @@ int main()
     test_steps_back_to_angle();
     test_round_trip_is_within_one_step();
     test_ratios_match_the_gears();
+
+    test_the_procedures_first_commands();
+    test_moves_past_the_limit_are_refused();
+    test_landing_exactly_on_a_limit_is_allowed();
+    test_speed_must_be_in_range();
+    test_an_angle_too_small_to_move_is_refused();
+    test_the_speed_sweep_never_leaves_the_range();
     return test_summary();
 }
