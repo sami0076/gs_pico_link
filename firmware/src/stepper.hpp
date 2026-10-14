@@ -48,6 +48,41 @@ public:
     // Send one pulse and count it.
     void step();
 
+    // --- running a move ----------------------------------------------------
+
+    // Begin a move that plan_move() has already approved. This sets the
+    // direction, which takes a moment, so it is not called while moving.
+    void start(const Move &m, uint16_t id);
+
+    // Called as often as possible. Sends a pulse if one is due, otherwise
+    // returns straight away. Returns true while the move is still running.
+    bool tick(absolute_time_t now);
+
+    // Slow down and stop. The axis keeps stepping for as long as it takes to
+    // come down from its current speed, so nothing is jerked to a halt.
+    void request_stop();
+
+    // Stop on the next loop, no deceleration. This also clears the zero,
+    // because after an abrupt halt the driver's real position is no longer
+    // something we can claim to know.
+    void estop();
+
+    bool moving() const { return moving_; }
+    bool aborted() const { return aborted_; }
+
+    // Non-zero between starting a move and reporting it finished, so the
+    // main loop knows there is still a DONE owing for this axis.
+    uint16_t move_id() const { return move_id_; }
+    void clear_move_id() { move_id_ = 0; }
+    const Move &plan() const { return plan_; }
+
+    // Signed, so it reads the same way as the commanded step count.
+    int32_t steps_done() const;
+
+    // First pulse to last pulse. The serial round trip is deliberately not
+    // included - this is how long the axis was actually turning.
+    uint32_t elapsed_us() const;
+
     // --- where we think we are --------------------------------------------
     int32_t pos_steps() const { return pos_steps_; }
     int32_t pos_mdeg() const { return steps_to_mdeg(spec_, pos_steps_); }
@@ -79,4 +114,15 @@ private:
     // Which way the DIR pin is currently pointing, so a reversal can be
     // spotted. Starts matching what init() writes.
     bool dir_positive_ = true;
+
+    // --- the move in progress ---------------------------------------------
+    Move plan_          = {};
+    uint32_t index_     = 0;  // how many pulses sent so far
+    bool moving_        = false;
+    bool aborted_       = false;
+    uint16_t move_id_   = 0;
+
+    absolute_time_t next_step_time_ = {};
+    absolute_time_t first_pulse_    = {};
+    absolute_time_t last_pulse_     = {};
 };

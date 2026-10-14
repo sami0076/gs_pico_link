@@ -107,6 +107,17 @@ constexpr uint PIN_AZ_DIR = 5;  // pin 7             - azimuth direction
 constexpr uint PIN_EL_PUL = 6;  // pin 9             - elevation step
 constexpr uint PIN_EL_DIR = 7;  // pin 10            - elevation direction
 
+// Which pins the PIN command is allowed to touch.
+//
+// GP12-GP15 are the only ones this board leaves unassigned, so they are the
+// safe place to prove the laptop can set a pin high or low. Everything else
+// belongs to a sensor, a radio or a motor driver, and driving one of those by
+// hand could fight whatever is on the other end.
+constexpr bool pin_is_safe_for_test(uint gpio)
+{
+    return gpio >= 12 && gpio <= 15;
+}
+
 // ============================================================================
 // 2. Radio settings
 // ============================================================================
