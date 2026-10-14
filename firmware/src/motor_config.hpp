@@ -124,6 +124,29 @@ constexpr AxisSpec EL_SPEC = {
 };
 
 // ============================================================================
+// What level each pin sits at
+// ============================================================================
+// Both signals are active low: the driver's + side is tied to +5V and the
+// Pico pulls the - side down. So "on" means driving the pin LOW.
+constexpr bool PUL_IDLE  = true;   // HIGH between steps
+constexpr bool PUL_PULSE = false;  // LOW makes one step
+
+// Which level the DIR pin needs for a move in the positive direction.
+//
+// Two things combine here, and getting either backwards sends the antenna
+// the wrong way:
+//
+//   active low      positive means driving DIR LOW, not HIGH
+//   invert_dir      set per axis when the gearing reverses the rotation
+//
+// Written as one expression so there is a single place to be right about it,
+// and so the host tests can check all four combinations.
+constexpr bool dir_level_for(const AxisSpec &axis, bool positive)
+{
+    return (positive != axis.invert_dir) ? false : true;
+}
+
+// ============================================================================
 // Pulse timing
 // ============================================================================
 // The CL57TE manual's minimums are a 1 us pulse and 5 us of DIR setup. The

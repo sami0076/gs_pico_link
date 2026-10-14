@@ -366,6 +366,37 @@ static void test_the_extremes()
     CHECK_NEAR(interval_us(e, 0), 315000, 100);
 }
 
+// ============================================================================
+// Pin levels
+// ============================================================================
+
+// Two things decide which way the antenna turns, and either one backwards
+// sends it the wrong way. All four combinations are spelled out here rather
+// than trusted to a one-line expression.
+static void test_direction_pin_levels()
+{
+    AxisSpec normal   = AZ_SPEC;
+    AxisSpec inverted = AZ_SPEC;
+    normal.invert_dir   = false;
+    inverted.invert_dir = true;
+
+    // Active low: positive means driving DIR LOW.
+    CHECK(dir_level_for(normal, true) == false);
+    CHECK(dir_level_for(normal, false) == true);
+
+    // With the axis inverted, both swap.
+    CHECK(dir_level_for(inverted, true) == true);
+    CHECK(dir_level_for(inverted, false) == false);
+
+    // Inverting must change the answer, never leave it alone.
+    CHECK(dir_level_for(normal, true) != dir_level_for(inverted, true));
+    CHECK(dir_level_for(normal, false) != dir_level_for(inverted, false));
+
+    // And a pulse is a LOW, with HIGH as the resting level.
+    CHECK(PUL_IDLE == true);
+    CHECK(PUL_PULSE == false);
+}
+
 int main()
 {
     test_azimuth_angles();
@@ -388,5 +419,7 @@ int main()
     test_a_slow_command_is_honoured();
     test_no_interval_hits_a_rail();
     test_the_extremes();
+
+    test_direction_pin_levels();
     return test_summary();
 }

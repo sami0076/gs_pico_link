@@ -142,3 +142,18 @@ gs_add_role(gs_tx_gps
     SOURCES src/tx_main.cpp
     DEFINES GS_TX_USE_REAL_GPS=1 GS_TX_MODE_DIAG=0
     LIBS hardware_uart)
+
+# Motor actuation test. No radio: the test procedure has the radio hardware
+# disconnected, and this is the build you flash for that.
+#
+# It still links RadioLib, because gs_add_role() gives every target the same
+# treatment and config.hpp includes <RadioLib.h>. That costs some flash and
+# nothing else, which is a fair price for not having two ways to define a
+# target.
+gs_add_role(gs_motor
+    SOURCES src/motor_main.cpp
+            src/stepper.cpp
+            src/motion_profile.cpp
+            src/motor_cmd.cpp
+            src/motor_reply.cpp
+            src/line_reader.cpp)
