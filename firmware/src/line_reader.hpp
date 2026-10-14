@@ -35,6 +35,10 @@ public:
     // feed() returns Line, and only until the next call to feed().
     const char *line() const { return buf_; }
 
+    // True when some of a line has arrived but its newline has not. Used to
+    // keep status messages from printing over something being typed.
+    bool partial() const { return len_ > 0; }
+
     // Throw away a partly-received line. Used at startup.
     void reset();
 

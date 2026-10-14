@@ -148,6 +148,38 @@ static void test_a_burst_of_garbage()
     CHECK(strcmp(r.line(), "PING") == 0);
 }
 
+// partial() is how the main loop knows someone is mid-command and holds back
+// its status messages.
+static void test_partial()
+{
+    LineReader r;
+    CHECK(!r.partial());
+
+    feed_all(r, "MOV");
+    CHECK(r.partial());
+
+    feed_all(r, "E,1,AZ,5000,1000");
+    CHECK(r.partial());
+
+    CHECK(r.feed('\n') == LineReader::Result::Line);
+    CHECK(!r.partial());
+
+    // A blank line never counts as typing in progress.
+    r.feed('\n');
+    CHECK(!r.partial());
+
+    // Nor does an over-long line once it has been thrown away.
+    for (int i = 0; i < 300; i++) {
+        r.feed('z');
+    }
+    CHECK(r.partial());
+    CHECK(r.feed('\n') == LineReader::Result::TooLong);
+    CHECK(!r.partial());
+
+    r.reset();
+    CHECK(!r.partial());
+}
+
 // reset() throws away a half-typed line, which is what startup wants.
 static void test_reset()
 {
@@ -170,6 +202,7 @@ int main()
     test_it_recovers_after_a_long_line();
     test_too_long_is_reported_once();
     test_a_burst_of_garbage();
+    test_partial();
     test_reset();
     return test_summary();
 }

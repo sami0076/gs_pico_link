@@ -356,13 +356,24 @@ int main()
                 report_done(g_el, AxisId::El);
                 g_el.clear_move_id();
             }
-            // Don't let a heartbeat land immediately after the DONE line.
-            next_stat = delayed_by_ms(now, MSTAT_PERIOD_MS);
         }
         was_moving = moving;
 
-        // Suppressed while moving - see the rule at the top of this file.
-        if (!moving && absolute_time_diff_us(now, next_stat) <= 0) {
+        // The heartbeat stays quiet for two reasons.
+        //
+        // Not while moving - see the rule at the top of this file.
+        //
+        // And not in the middle of someone typing. A status line landing
+        // between two keystrokes does not corrupt the command, which is read
+        // on a different path, but it scrambles the screen and makes a hand
+        // typed command hard to check before pressing enter.
+        //
+        // In both cases the deadline is pushed along rather than left in the
+        // past, so the heartbeat resumes a full period after things go quiet
+        // instead of firing the instant a move ends or a line is finished.
+        if (moving || g_reader.partial()) {
+            next_stat = delayed_by_ms(now, MSTAT_PERIOD_MS);
+        } else if (absolute_time_diff_us(now, next_stat) <= 0) {
             next_stat = delayed_by_ms(now, MSTAT_PERIOD_MS);
             send(format_mstat(g_out, sizeof(g_out),
                               to_ms_since_boot(now) / 1000, g_az.pos_mdeg(),
