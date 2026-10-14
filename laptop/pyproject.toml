@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gs"
+version = "0.1.0"
+description = "Ground station tools: motor actuation test, and later the radio reader"
+requires-python = ">=3.10"
+
+# pyserial is the only thing needed to run. Everything else in here is
+# deliberately plain standard library, so a laptop at a test site needs one
+# pip install and nothing more.
+dependencies = ["pyserial>=3.5"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[tool.setuptools.packages.find]
+include = ["gs*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
