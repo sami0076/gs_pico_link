@@ -64,8 +64,14 @@ constexpr uint PIN_EN   = 16;  // pin 21            - radio enable
 // GPS module. Only the gs_tx_gps build uses these.
 // Note the crossover: the GPS's TX goes to the Pico's RX, and vice versa.
 //
-// UART0 can appear on two different pin pairs. The board puts it on GP12/GP13
-// because GP0/GP1 are taken by the I2C sensors.
+// UART0 can appear on two different pin pairs; GP12/GP13 is the pair chosen
+// here because GP0/GP1 are taken by the I2C sensors.
+//
+// NOT ON gs_pcb_v1. The board's pinout sheet leaves GP12-GP15 unassigned -
+// there is no GPS header on the ground station board, because the GPS flies
+// on the rocket. These constants describe how a transmitter Pico is wired,
+// not this one. Which is also why GP12-GP15 are safe for the PIN command to
+// poke on the motor build: on this board nothing is on the other end.
 inline uart_inst_t *const GPS_UART = uart0;
 
 constexpr uint PIN_GPS_TX = 12;  // pin 16, UART0 TX -> GPS RX

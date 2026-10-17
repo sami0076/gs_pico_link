@@ -232,6 +232,22 @@ Servo 2 DIR-  GP7         10             blue      (elevation direction)
 all PUL+/DIR+ +5V, top two pins of each screw terminal, green
 ```
 
+Two more holes that matter every time you pick up a meter, from the board's
+own pinout sheet:
+
+```
+GND           physical pin 38    <- the black probe goes here, always
+VSYS 5V       physical pin 39    <- where PUL+ and DIR+ are fed from
+```
+
+**Use pin 38 and nothing else as your ground reference.** Measuring a
+driver terminal against some other ground gives numbers that look like
+readings and are not: a floating input can read negative, which no Pico
+output can ever do.
+
+And VSYS reaches the board through a diode, so on USB power it is about
+**4.7 V**, not a clean 5.00. Every expected voltage below allows for that.
+
 ### Step 2 · Flash the Pico
 
 Motor supply still **off**.
