@@ -181,6 +181,18 @@ The code assumes **800**. The manual's table says that is:
 switch 1: off    switch 2: on    switch 3: on    switch 4: on
 ```
 
+> **Found on this hardware (17 Oct 2026): switches 1, 3 and 4 on, which
+> is 1600 pulses per turn, not 800.** Both boxes. Left that way, every
+> move comes out at exactly half the angle asked for — command 45
+> degrees, get 22.5 — and nothing in the software can tell, because the
+> Pico counts the pulses it sent and believes them.
+>
+> Fixed by moving two switches: **1 off, 2 on**. Keeping 1600 instead
+> would work and would double the resolution, but it means doubling
+> `steps_num` for both axes in `motor_config.hpp` (azimuth 6400/63,
+> elevation 4000/63), a rebuild, a reflash, regenerating the contract
+> vectors, and changing the expected numbers on this page.
+
 Count the gear teeth too, if you have not already: azimuth should be a 10:1
 planetary gearbox and a 32:14 gear pair, elevation 20:14. If a gear has
 been swapped, every angle is wrong by the same factor.
