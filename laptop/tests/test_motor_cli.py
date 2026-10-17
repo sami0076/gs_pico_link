@@ -219,9 +219,24 @@ def test_blank_lines_and_comments_are_ignored():
     assert "no such command" not in text
 
 
-def test_a_pin_the_firmware_guards_is_refused_with_advice():
-    _, text = run("pin 4 1")
-    assert "use GP12-GP15" in text
+def test_a_pin_belonging_to_something_else_is_refused_with_advice():
+    _, text = run("pin 25 1")
+    assert "GP4-7 or GP12-15" in text
+
+
+def test_a_motor_pin_can_be_held_for_a_meter():
+    # The only way to check that wiring: a step pulse is five microseconds
+    # long and no multimeter will ever see one.
+    _, text = run("zero all", "pin 5 1", "pos")
+    assert "GP5 is now high" in text
+    assert "zeroed" in text  # a direction line moves nothing
+
+
+def test_holding_a_step_line_costs_the_zero_and_says_so():
+    _, text = run("zero all", "pin 4 0", "pos", "move az 5 10")
+    assert "GP4 is now low" in text
+    assert "NOT ZEROED" in text
+    assert "send ZERO first" in text
 
 
 # ============================================================================

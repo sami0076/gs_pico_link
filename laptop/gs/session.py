@@ -12,13 +12,17 @@ wherever it likes. Half a line now and the rest in a moment is normal, and
 so is two lines in one lump. The Pico does the same job on its side with
 LineReader; this is the mirror of it.
 
-**One command at a time.** The firmware works out whether it is busy once
-per batch of bytes, before reading them, so two commands that arrive
-together are both judged as though neither had run - two MOVEs restart the
-axis and the first one's DONE never comes. Nothing here ever has two
-commands outstanding. That is not caution, it is the only safe way to speak
-to this firmware, and it is why the matching below can be as simple as it
-is.
+**One command at a time.** Nothing here ever has two commands outstanding.
+
+That began as a way round a firmware bug: it worked out whether it was
+busy once per batch of received bytes, before reading them, so two
+commands arriving together were both judged as though neither had run -
+two MOVEs restarted the axis and the first one's DONE never came. That is
+fixed as of 7.9b, and the rule stays anyway. A Pico flashed before that
+fix behaves the old way and nothing on the wire says which it is; the
+reply matching below is only simple because one command is outstanding;
+and an error with no id (see below) can only be attributed at all when
+there is just one command it could belong to.
 
 **Matching replies to commands.** A move takes up to a minute and the
 replies to it arrive long after the command went out, with heartbeats in
@@ -35,9 +39,11 @@ About errors with no id
 -----------------------
 
 Some refusals come back as `ERR,0,...`: a line too long to have been read,
-and - firmware behaviour, not a typo - any line the parser could not make
-sense of, even when its id field was perfectly readable. There is no way to
-tell from the line itself which command it belongs to.
+an unknown verb, an id that is not a number. In each of those the id truly
+could not be read, so there is nothing to quote back. (Before 7.9b this
+also happened to any line the parser disliked, even when its id field was
+perfectly readable - a mistyped axis came back as ERR,0 and could not be
+matched to anything. The firmware keeps the id now whenever it has one.)
 
 Because only one command is ever outstanding, an id-0 error can only be
 about that one, so it is treated as its answer. Pipelining would make that

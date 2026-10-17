@@ -36,6 +36,7 @@
 #include "config.hpp"
 #include "line_reader.hpp"
 #include "motor_cmd.hpp"
+#include "motor_commands.hpp"
 #include "motor_reply.hpp"
 #include "stepper.hpp"
 
@@ -102,171 +103,106 @@ static void fatal_forever(const char *reason)
 // Commands
 // ----------------------------------------------------------------------------
 
-static Stepper *axis_for(AxisId a)
+static Stepper &axis_ref(AxisId a)
 {
-    if (a == AxisId::Az) {
-        return &g_az;
-    }
-    if (a == AxisId::El) {
-        return &g_el;
-    }
-    return nullptr;
+    return (a == AxisId::El) ? g_el : g_az;
 }
 
-static void do_move(const Command &c)
+// What the machine looks like right now, for decide() to judge.
+//
+// Taken fresh for every command. The old code worked this out once per
+// batch of received bytes, before reading them, so two commands arriving
+// in one USB packet were both judged against the state from before either
+// had run - a second MOVE would restart the axis and the first move's DONE
+// was never sent. Reading it here means a command is always judged against
+// the machine as it is when that command is handled.
+static MachineState snapshot()
 {
-    Stepper *s = axis_for(c.axis);
-    if (s == nullptr) {
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::BadAxis, ""));
-        return;
+    MachineState s;
+    s.busy         = g_az.moving() || g_el.moving();
+    s.az_zeroed    = g_az.zeroed();
+    s.el_zeroed    = g_el.zeroed();
+    s.az_pos_steps = g_az.pos_steps();
+    s.el_pos_steps = g_el.pos_steps();
+    s.uptime_ms    = to_ms_since_boot(get_absolute_time());
+    s.target       = GS_TARGET_NAME;
+    s.version      = GS_VERSION;
+    return s;
+}
+
+static void set_test_pin(const Decision &d)
+{
+    // A spare pin has never been set up, so it needs claiming first.
+    //
+    // A motor pin has: Stepper::init() already made it an output sitting
+    // at its idle level, and gpio_init() would make it an input again for
+    // a moment on the way past. The +5V rail sits on the other side of the
+    // optocoupler and Pico pins are not 5V tolerant, so letting one float
+    // is exactly what config.hpp warns against. Write the level straight
+    // to it instead.
+    if (gpio_is_spare(d.gpio)) {
+        gpio_init(d.gpio);
+        gpio_set_dir(d.gpio, GPIO_OUT);
     }
+    gpio_put(d.gpio, d.level != 0);
 
-    // Without a zero, the soft limits are measured from an unknown origin,
-    // which is no protection at all. This is the main thing standing between
-    // a mistyped command and the gimbal's hard stops.
-    if (!s->zeroed()) {
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::NoZero,
-                        axis_name(c.axis)));
-        return;
+    if (d.clear_az_zero) {
+        g_az.clear_zero();
     }
+    if (d.clear_el_zero) {
+        g_el.clear_zero();
+    }
+}
 
-    Move m{};
-    const PlanResult r =
-        plan_move(s->spec(), s->pos_steps(), c.mdeg, c.mdps, &m);
-
-    switch (r) {
-    case PlanResult::BadSpeed:
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::BadSpeed,
-                        axis_name(c.axis)));
-        return;
-    case PlanResult::OutOfRange:
-        // Refused whole, never shortened. A clamped move would put a
-        // different angle on the gimbal than the one written down.
-        send(format_err_limit(g_out, sizeof(g_out), c.id, c.axis, m.to_mdeg,
-                              s->spec().min_mdeg, s->spec().max_mdeg));
-        return;
-    case PlanResult::NoMovement:
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::ZeroSteps,
-                        axis_name(c.axis)));
-        return;
-    case PlanResult::Ok:
+// Carry out what decide() asked for. Nothing here chooses anything.
+static void apply(const Decision &d)
+{
+    switch (d.act) {
+    case Act::Nothing:
         break;
-    }
-
-    send(format_ack(g_out, sizeof(g_out), c.id, Verb::Move));
-
-    // PLAN carries the quantised end angle, which is not simply start plus
-    // commanded: 45 degrees of azimuth is 2286 steps, or 45.006 degrees.
-    // That number is the test data's theoretical angle.
-    send(format_plan(g_out, sizeof(g_out), c.id, c.axis, m));
-
-    s->start(m, c.id);
-}
-
-static void do_zero(const Command &c)
-{
-    const int32_t mdeg = c.has_mdeg ? c.mdeg : 0;
-
-    if (c.axis == AxisId::All) {
-        g_az.set_pos_steps(mdeg_to_steps(AZ_SPEC, mdeg));
-        g_el.set_pos_steps(mdeg_to_steps(EL_SPEC, mdeg));
-    } else {
-        Stepper *s = axis_for(c.axis);
-        if (s == nullptr) {
-            send(format_err(g_out, sizeof(g_out), c.id, ErrCode::BadAxis, ""));
-            return;
+    case Act::StartMove:
+        axis_ref(d.axis).start(d.move, d.id);
+        break;
+    case Act::RequestStop:
+        g_az.request_stop();
+        g_el.request_stop();
+        break;
+    case Act::Estop:
+        g_az.estop();
+        g_el.estop();
+        break;
+    case Act::SetZero:
+        if (d.zero_az) {
+            g_az.set_pos_steps(d.az_steps);
         }
-        s->set_pos_steps(mdeg_to_steps(s->spec(), mdeg));
+        if (d.zero_el) {
+            g_el.set_pos_steps(d.el_steps);
+        }
+        break;
+    case Act::SetPin:
+        set_test_pin(d);
+        break;
     }
-    send(format_ack(g_out, sizeof(g_out), c.id, Verb::Zero));
 }
 
-static void do_pin(const Command &c)
+static void handle(const Command &c)
 {
-    if (!pin_is_safe_for_test(c.gpio)) {
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::BadGpio,
-                        "use GP12-GP15"));
-        return;
-    }
-    gpio_init(c.gpio);
-    gpio_set_dir(c.gpio, GPIO_OUT);
-    gpio_put(c.gpio, c.level != 0);
-    send(format_pin(g_out, sizeof(g_out), c.id, c.gpio, c.level));
-}
+    const Decision d = decide(c, snapshot());
 
-static void do_pos(const Command &c)
-{
-    send(format_pos(g_out, sizeof(g_out), c.id, g_az.pos_mdeg(),
-                    g_el.pos_mdeg(), g_az.pos_steps(), g_el.pos_steps(),
-                    g_az.zeroed() && g_el.zeroed()));
-}
-
-static void handle(const Command &c, bool busy)
-{
-    if (c.err != ParseError::None) {
-        ErrCode e = ErrCode::Syntax;
-        if (c.err == ParseError::UnknownVerb) {
-            e = ErrCode::BadVerb;
-        } else if (c.err == ParseError::BadAxis) {
-            e = ErrCode::BadAxis;
-        } else if (c.err == ParseError::BadGpio) {
-            e = ErrCode::BadGpio;
-        }
-        send(format_err(g_out, sizeof(g_out), c.id, e, ""));
-        return;
+    // Lines first, then the action. A move's ACK and PLAN have to be on
+    // the wire before its first pulse, because nothing may be printed
+    // between the first pulse and the last.
+    if (d.len1 > 0) {
+        fputs(d.line1, stdout);
     }
-
-    // While an axis is turning, only the two stop commands are acted on.
-    // They are answered by the DONE that follows rather than by an ACK, so
-    // that nothing is printed mid-move.
-    if (busy) {
-        if (c.verb == Verb::Stop) {
-            g_az.request_stop();
-            g_el.request_stop();
-            return;
-        }
-        if (c.verb == Verb::Estop) {
-            g_az.estop();
-            g_el.estop();
-            return;
-        }
-        send(format_err(g_out, sizeof(g_out), c.id, ErrCode::Busy, ""));
-        return;
+    if (d.len2 > 0) {
+        fputs(d.line2, stdout);
     }
-
-    switch (c.verb) {
-    case Verb::Move:
-        do_move(c);
-        break;
-    case Verb::Zero:
-        do_zero(c);
-        break;
-    case Verb::Pin:
-        do_pin(c);
-        break;
-    case Verb::Pos:
-        do_pos(c);
-        break;
-    case Verb::Limits:
-        send(format_lim(g_out, sizeof(g_out), c.id));
-        break;
-    case Verb::Ping:
-        send(format_pong(g_out, sizeof(g_out), c.id, GS_TARGET_NAME, GS_VERSION,
-                         to_ms_since_boot(get_absolute_time())));
-        break;
-    case Verb::Stop:
-    case Verb::Estop:
-        // Nothing is moving, so there is nothing to stop. Still answered, so
-        // the laptop is never left waiting.
-        send(format_ack(g_out, sizeof(g_out), c.id, c.verb));
-        break;
-    case Verb::None:
-        break;
-    }
+    apply(d);
 }
 
 // Read whatever has arrived without waiting for more.
-static void poll_input(bool busy)
+static void poll_input()
 {
     for (;;) {
         const int ch = getchar_timeout_us(0);
@@ -276,7 +212,7 @@ static void poll_input(bool busy)
 
         const LineReader::Result r = g_reader.feed(static_cast<char>(ch));
         if (r == LineReader::Result::Line) {
-            handle(parse_command(g_reader.line()), busy);
+            handle(parse_command(g_reader.line()));
         } else if (r == LineReader::Result::TooLong) {
             send(format_err(g_out, sizeof(g_out), 0, ErrCode::TooLong, ""));
         }
@@ -343,7 +279,7 @@ int main()
         const bool el_moving = g_el.tick(now);
         const bool moving    = az_moving || el_moving;
 
-        poll_input(moving);
+        poll_input();
 
         // An axis that has just finished reports once. Checked after tick()
         // so the last pulse is already out.

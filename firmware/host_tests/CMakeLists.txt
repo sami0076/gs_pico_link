@@ -37,6 +37,10 @@ gs_add_host_test(test_line_reader ../src/line_reader.cpp)
 gs_add_host_test(test_motor_cmd ../src/motor_cmd.cpp)
 gs_add_host_test(test_motor_reply ../src/motor_reply.cpp ../src/motor_cmd.cpp
                                   ../src/motion_profile.cpp)
+gs_add_host_test(test_motor_commands ../src/motor_commands.cpp
+                                     ../src/motor_reply.cpp
+                                     ../src/motor_cmd.cpp
+                                     ../src/motion_profile.cpp)
 
 # ----------------------------------------------------------------------------
 # The contract with the laptop
@@ -54,8 +58,8 @@ set(GS_VECTORS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../laptop/tests/data/motor_vectors.txt)
 
 add_executable(gen_motor_vectors gen_motor_vectors.cpp
-               ../src/motor_reply.cpp ../src/motor_cmd.cpp
-               ../src/motion_profile.cpp)
+               ../src/motor_commands.cpp ../src/motor_reply.cpp
+               ../src/motor_cmd.cpp ../src/motion_profile.cpp)
 
 add_test(NAME write_motor_vectors
          COMMAND gen_motor_vectors

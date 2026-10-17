@@ -155,5 +155,6 @@ gs_add_role(gs_motor
             src/stepper.cpp
             src/motion_profile.cpp
             src/motor_cmd.cpp
+            src/motor_commands.cpp
             src/motor_reply.cpp
             src/line_reader.cpp)

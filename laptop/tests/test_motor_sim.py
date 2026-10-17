@@ -199,12 +199,45 @@ def test_a_speed_outside_the_allowed_range_is_refused(speed_dps):
     assert out == ["ERR,7,speed,AZ"]
 
 
-def test_only_the_spare_pins_can_be_poked():
-    # A typo must not be able to toggle a motor's step line.
-    s = sim.MotorSim()
+def test_a_spare_pin_can_be_set_and_costs_nothing():
+    s = zeroed_sim()
     assert s.feed(p.encode(p.pin(8, 14, 1)), 0) == ["PIN,8,14,1"]
-    assert s.feed(p.encode(p.pin(9, 4, 1)), 0) == ["ERR,9,gpio,use GP12-GP15"]
     assert s.pins == {14: 1}
+    assert s.az.zeroed and s.el.zeroed
+
+
+def test_holding_a_step_line_gives_up_that_axis_zero():
+    # Being able to hold a motor pin steady is the only way to check that
+    # wiring with a meter, since a step pulse is five microseconds long.
+    # But driving PUL low makes the driver take a step nobody counted, so
+    # the position afterwards is one step away from the truth.
+    s = zeroed_sim()
+    assert s.feed(p.encode(p.pin(9, 4, 0)), 0) == ["PIN,9,4,0"]
+    assert s.az.zeroed is False
+    assert s.el.zeroed is True
+
+    # ...and the next move on that axis is refused until it is re-zeroed.
+    assert s.feed(p.encode(p.move(10, "AZ", 5.0, 1.0)), 0) == [
+        "ERR,10,nozero,AZ"
+    ]
+    assert s.feed(p.encode(p.move(11, "EL", 5.0, 1.0)), 0)[0] == "ACK,11,MOVE"
+
+
+def test_holding_a_direction_line_keeps_the_zero():
+    # Nothing moves, and the direction is set again at the start of every
+    # move, so this one costs nothing.
+    s = zeroed_sim()
+    assert s.feed(p.encode(p.pin(12, 5, 1)), 0) == ["PIN,12,5,1"]
+    assert s.az.zeroed is True
+
+
+def test_a_pin_belonging_to_something_else_is_refused():
+    # The radio and the GPS are not ours to poke.
+    s = sim.MotorSim()
+    assert s.feed(p.encode(p.pin(13, 25, 1)), 0) == [
+        "ERR,13,gpio,GP4-7 or GP12-15"
+    ]
+    assert s.pins == {}
 
 
 def test_a_line_too_long_is_thrown_away_and_reported_once():
@@ -235,13 +268,21 @@ def test_lines_the_pico_cannot_read(line, code):
     assert err.code == code
 
 
-def test_a_parse_error_loses_the_id():
-    # Firmware behaviour, copied on purpose: parse_command() reports the
-    # fault on a blank command, so the id never makes it into the reply even
-    # when the id field itself was fine. Nothing on the laptop can match
-    # this error to the command that caused it.
+def test_a_refusal_quotes_the_id_that_earned_it():
+    # Until 7.9b the firmware reported every parse fault on a blank
+    # command, so a mistyped axis came back as ERR,0 and nothing on the
+    # laptop could tell which command had been turned down.
     s = sim.MotorSim()
-    assert s.feed(b"MOVE,42,ZZ,5000,1000\n", 0) == ["ERR,0,axis,"]
+    assert s.feed(b"MOVE,42,ZZ,5000,1000\n", 0) == ["ERR,42,axis,"]
+    assert s.feed(b"PIN,43,99,1\n", 0) == ["ERR,43,gpio,"]
+
+
+def test_a_line_with_no_readable_id_still_reports_zero():
+    # There is nothing honest to put there: an unknown verb, or an id that
+    # is not a number, leaves no id to quote back.
+    s = sim.MotorSim()
+    assert s.feed(b"WOBBLE,1\n", 0) == ["ERR,0,verb,"]
+    assert s.feed(b"PING,x\n", 0) == ["ERR,0,syntax,"]
 
 
 # ============================================================================
@@ -361,27 +402,26 @@ def test_both_axes_report_only_once_everything_has_stopped():
     assert out == ["ERR,3,busy,"]  # one axis moving blocks the other
 
 
-def test_two_commands_in_one_packet_share_a_stale_busy_flag():
-    # Copied firmware behaviour, not an accident. poll_input() is handed the
-    # busy flag worked out before the bytes were read, so every line in one
-    # packet is judged as though none of them had run yet. Two MOVEs
-    # together restart the axis and the first move's DONE is never sent.
-    #
-    # This is why the CLI must wait for a reply before sending the next
-    # command, and the simulator reproducing it is the only way that rule
-    # gets tested without hardware.
+def test_two_commands_in_one_packet_are_judged_one_at_a_time():
+    # Until 7.9b the firmware worked out whether it was busy once per batch
+    # of received bytes, before reading them, so both commands in one
+    # packet were judged as though neither had run: a second MOVE restarted
+    # the axis and the first move's DONE was never sent. The state is now
+    # read fresh for each line.
     s = zeroed_sim()
     out = s.feed(
         p.encode(p.move(2, "AZ", 5.0, 45.0))
         + p.encode(p.move(3, "AZ", 5.0, 45.0)),
         0,
     )
-    ids = [r.id for r in records(out) if isinstance(r, p.Ack)]
-    assert ids == [2, 3]  # both accepted, neither refused as busy
 
-    # Only the second one is ever reported finished.
+    assert [r.id for r in records(out) if isinstance(r, p.Ack)] == [2]
+    refused = [r for r in records(out) if isinstance(r, p.Err)]
+    assert [(r.id, r.code) for r in refused] == [(3, "busy")]
+
+    # And the first move still reports what it did.
     done = [r for r in records(s.poll(60 * SEC)) if isinstance(r, p.Done)]
-    assert [d.id for d in done] == [3]
+    assert [d.id for d in done] == [2]
 
 
 # ============================================================================

@@ -187,15 +187,24 @@ def test_moving_before_zeroing_is_refused(live):
     assert caught.value.err.code == "nozero"
 
 
-def test_an_error_with_no_id_is_still_matched_to_the_command(live):
-    # The firmware reports a bad axis as ERR,0,axis, - the id is lost even
-    # though it was readable. Only one command is ever outstanding, so
-    # there is nothing else it could be about, and treating it as the
-    # answer is what stops the session hanging on a reply that will not
-    # come with the right number on it.
+def test_a_refusal_now_quotes_the_id_that_earned_it(live):
+    # Since 7.9b the firmware keeps the id whenever it could read one, so
+    # a mistyped axis can be matched to the command that caused it.
     with pytest.raises(sn.Refused) as caught:
         live.request("MOVE,5,ZZ,5000,1000", 5, (p.Ack,), what="a bad move")
     assert caught.value.err.code == "axis"
+    assert caught.value.err.id == 5
+
+
+def test_an_error_with_no_id_is_still_matched_to_the_command(live):
+    # Some refusals genuinely have no id to quote: a line too long to have
+    # been read at all is reported as ERR,0. Only one command is ever
+    # outstanding, so there is nothing else it could be about, and taking
+    # it as the answer is what stops the session hanging for a reply that
+    # will never carry the right number.
+    with pytest.raises(sn.Refused) as caught:
+        live.request("WOBBLE,6", 6, (p.Ack,), what="a command it never heard of")
+    assert caught.value.err.code == "verb"
     assert caught.value.err.id == 0
 
 

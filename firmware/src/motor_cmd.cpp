@@ -100,10 +100,18 @@ bool parse_int(const Field &f, int64_t lo, int64_t hi, int64_t *out)
 
 // Fill in err and leave the verb unset, so a caller that forgets to check
 // err still does nothing rather than something wrong.
-Command fail(ParseError e)
+//
+// The id is carried through whenever it was readable. It costs nothing and
+// it is the only thing that ties the refusal to the command that caused it:
+// without it the laptop gets ERR,0 for a mistyped axis and cannot tell which
+// of its commands was turned down. Where the id itself could not be read -
+// a line with no fields, an unknown verb, an id that is not a number - it
+// stays 0, because there is nothing honest to put there.
+Command fail(ParseError e, uint16_t id = 0)
 {
     Command c;
     c.err = e;
+    c.id  = id;
     return c;
 }
 
@@ -186,7 +194,7 @@ Command parse_command(const char *line)
     switch (verb) {
     case Verb::Move: {
         if (!read_axis(f[2], false, &c.axis)) {
-            return fail(ParseError::BadAxis);
+            return fail(ParseError::BadAxis, c.id);
         }
         // The range here is only a guard against nonsense; whether the speed
         // and angle are actually acceptable is plan_move's decision.
@@ -194,7 +202,7 @@ Command parse_command(const char *line)
         int64_t mdeg = 0;
         if (!parse_int(f[3], 0, 1000000, &mdps) ||
             !parse_int(f[4], -1000000, 1000000, &mdeg)) {
-            return fail(ParseError::Syntax);
+            return fail(ParseError::Syntax, c.id);
         }
         c.mdps = static_cast<int32_t>(mdps);
         c.mdeg = static_cast<int32_t>(mdeg);
@@ -203,12 +211,12 @@ Command parse_command(const char *line)
 
     case Verb::Zero: {
         if (!read_axis(f[2], true, &c.axis)) {
-            return fail(ParseError::BadAxis);
+            return fail(ParseError::BadAxis, c.id);
         }
         if (zero_with_angle) {
             int64_t mdeg = 0;
             if (!parse_int(f[3], -1000000, 1000000, &mdeg)) {
-                return fail(ParseError::Syntax);
+                return fail(ParseError::Syntax, c.id);
             }
             c.mdeg     = static_cast<int32_t>(mdeg);
             c.has_mdeg = true;
@@ -222,7 +230,7 @@ Command parse_command(const char *line)
         int64_t gpio  = 0;
         int64_t level = 0;
         if (!parse_int(f[2], 0, 29, &gpio) || !parse_int(f[3], 0, 1, &level)) {
-            return fail(ParseError::BadGpio);
+            return fail(ParseError::BadGpio, c.id);
         }
         c.gpio  = static_cast<uint8_t>(gpio);
         c.level = static_cast<uint8_t>(level);

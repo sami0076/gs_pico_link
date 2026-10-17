@@ -130,7 +130,7 @@ def test_the_file_is_whole():
 
 def test_every_kind_of_vector_is_present():
     kinds = {name for name, _ in RECORDS}
-    assert kinds == {"conv", "plan", "interval", "reply", "cmd"}
+    assert kinds == {"conv", "plan", "interval", "reply", "cmd", "decide"}
 
 
 # ============================================================================
@@ -455,3 +455,105 @@ def test_every_command_the_laptop_can_build_is_covered():
     verbs = {line.split(",")[0] for line in built}
     assert verbs == {"MOVE", "STOP", "ESTOP", "ZERO", "POS", "PIN",
                      "LIMITS", "PING"}
+
+
+# ============================================================================
+# What the firmware decides to do about a command
+# ============================================================================
+# Until 7.9b these rules lived in motor_main.cpp and could not be reached
+# from a host test, so nothing checked that the simulator refused the same
+# things the Pico refuses. That was the one gap named when the contract
+# test was written, and this closes it.
+
+
+def _state_of(v):
+    """Build a simulator in the state the vector describes."""
+    machine = sim.MotorSim(
+        version="abc1234", target="gs_motor", boot_us=0
+    )
+    machine.az.zeroed = v["az_zeroed"] == "1"
+    machine.el.zeroed = v["el_zeroed"] == "1"
+    machine.az.pos_steps = int(v["az_pos_steps"])
+    machine.el.pos_steps = int(v["el_pos_steps"])
+    return machine
+
+
+@pytest.mark.parametrize(
+    "v",
+    of_kind("decide"),
+    ids=[
+        f"{f['cmd']}-busy{f['busy']}-az{f['az_zeroed']}el{f['el_zeroed']}"
+        for f in of_kind("decide")
+    ],
+)
+def test_the_same_command_is_answered_the_same_way(v):
+    machine = _state_of(v)
+    command = sim.parse_command(_unescape(v["cmd"]))
+
+    out = []
+    machine._handle(
+        command, v["busy"] == "1", int(v["uptime_ms"]) * 1000, out
+    )
+
+    expected = [line for line in (v["line1"], v["line2"]) if line]
+    assert out == [_unescape(line) for line in expected]
+
+
+@pytest.mark.parametrize(
+    "v",
+    [f for f in of_kind("decide") if f["act"] == "setpin"],
+    ids=[
+        f"{f['cmd']}-gpio{f['gpio']}"
+        for f in of_kind("decide")
+        if f["act"] == "setpin"
+    ],
+)
+def test_poking_a_pin_costs_the_same_zero_on_both_sides(v):
+    # Driving a step line makes the driver take a step nobody counted, so
+    # that axis gives up its zero. A simulator that kept it would let a
+    # dry run move from a position the real machine no longer knows.
+    machine = _state_of(v)
+    was_az, was_el = machine.az.zeroed, machine.el.zeroed
+
+    machine._handle(sim.parse_command(_unescape(v["cmd"])), False, 0, [])
+
+    assert machine.az.zeroed == (was_az and v["clear_az_zero"] != "1")
+    assert machine.el.zeroed == (was_el and v["clear_el_zero"] != "1")
+
+
+@pytest.mark.parametrize(
+    "v",
+    [f for f in of_kind("decide") if f["act"] == "setzero"],
+    ids=[
+        f"{f['cmd']}" for f in of_kind("decide") if f["act"] == "setzero"
+    ],
+)
+def test_zeroing_places_the_axes_at_the_same_steps(v):
+    machine = _state_of(v)
+    machine._handle(sim.parse_command(_unescape(v["cmd"])), False, 0, [])
+
+    if v["zero_az"] == "1":
+        assert machine.az.pos_steps == int(v["az_steps"])
+        assert machine.az.zeroed
+    if v["zero_el"] == "1":
+        assert machine.el.pos_steps == int(v["el_steps"])
+        assert machine.el.zeroed
+
+
+def test_a_move_is_only_started_when_the_firmware_would_start_one():
+    # The act field says whether the Pico actually set an axis going.
+    # Anything the simulator starts and the firmware does not is a dry run
+    # that moves a machine the real one leaves still.
+    for v in of_kind("decide"):
+        machine = _state_of(v)
+        machine._handle(
+            sim.parse_command(_unescape(v["cmd"])),
+            v["busy"] == "1",
+            int(v["uptime_ms"]) * 1000,
+            [],
+        )
+        started = machine.az.moving or machine.el.moving
+        assert started == (v["act"] == "startmove"), (
+            f"{v['cmd']!r} with busy={v['busy']}: firmware act={v['act']}, "
+            f"simulator {'started' if started else 'did not start'} a move"
+        )

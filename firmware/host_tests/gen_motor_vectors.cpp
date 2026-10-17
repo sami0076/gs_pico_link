@@ -42,6 +42,7 @@
 
 #include "motion_profile.hpp"
 #include "motor_cmd.hpp"
+#include "motor_commands.hpp"
 #include "motor_config.hpp"
 #include "motor_reply.hpp"
 
@@ -582,6 +583,131 @@ void cmd_vectors()
     }
 }
 
+// ---------------------------------------------------------------------------
+// What the firmware decides to do about a command
+// ---------------------------------------------------------------------------
+// Until 7.9b these rules lived in motor_main.cpp and could not be reached
+// from a host test, so nothing checked that the laptop's simulator refused
+// the same things the Pico refuses. They live in motor_commands.cpp now, so
+// they can be written down here with everything else.
+
+const char *act_name(Act a)
+{
+    switch (a) {
+    case Act::Nothing:     return "nothing";
+    case Act::StartMove:   return "startmove";
+    case Act::RequestStop: return "requeststop";
+    case Act::Estop:       return "estop";
+    case Act::SetZero:     return "setzero";
+    case Act::SetPin:      return "setpin";
+    }
+    return "?";
+}
+
+// A line that may hold anything, written escaped and without the trailing
+// newline that frames it on the wire.
+void put_field(const char *name, const char *text)
+{
+    fprintf(out, "\t%s=", name);
+    char trimmed[MAX_REPLY_LEN];
+    size_t n = 0;
+    for (const char *p = text; *p != '\0' && n + 1 < sizeof(trimmed); p++) {
+        if (*p != '\n') {
+            trimmed[n++] = *p;
+        }
+    }
+    trimmed[n] = '\0';
+    put_escaped(trimmed);
+}
+
+void decide_vector(const MachineState &s, const char *line)
+{
+    const Decision d = decide(parse_command(line), s);
+
+    fprintf(out,
+            "decide\tbusy=%d\taz_zeroed=%d\tel_zeroed=%d\taz_pos_steps=%ld"
+            "\tel_pos_steps=%ld\tuptime_ms=%lu\tact=%s\taxis=%s"
+            "\tzero_az=%d\tzero_el=%d\taz_steps=%ld\tel_steps=%ld"
+            "\tgpio=%u\tlevel=%u\tclear_az_zero=%d\tclear_el_zero=%d",
+            s.busy ? 1 : 0, s.az_zeroed ? 1 : 0, s.el_zeroed ? 1 : 0,
+            static_cast<long>(s.az_pos_steps),
+            static_cast<long>(s.el_pos_steps),
+            static_cast<unsigned long>(s.uptime_ms), act_name(d.act),
+            axis_name(d.axis), d.zero_az ? 1 : 0, d.zero_el ? 1 : 0,
+            static_cast<long>(d.az_steps), static_cast<long>(d.el_steps),
+            static_cast<unsigned>(d.gpio), static_cast<unsigned>(d.level),
+            d.clear_az_zero ? 1 : 0, d.clear_el_zero ? 1 : 0);
+
+    put_field("line1", d.len1 > 0 ? d.line1 : "");
+    put_field("line2", d.len2 > 0 ? d.line2 : "");
+    put_field("cmd", line);
+    fputc('\n', out);
+    vectors_written++;
+}
+
+void decide_vectors()
+{
+    MachineState ready;
+    ready.busy         = false;
+    ready.az_zeroed    = true;
+    ready.el_zeroed    = true;
+    ready.az_pos_steps = 0;
+    ready.el_pos_steps = 0;
+    ready.uptime_ms    = 12345;
+    ready.target       = "gs_motor";
+    ready.version      = "abc1234";
+
+    MachineState cold = ready;  // nothing zeroed yet, as after a reboot
+    cold.az_zeroed    = false;
+    cold.el_zeroed    = false;
+
+    MachineState half = ready;  // one axis placed, the other not
+    half.el_zeroed    = false;
+
+    MachineState moving = ready;  // an axis is turning
+    moving.busy         = true;
+
+    MachineState placed = ready;  // partway round, to catch the limits
+    placed.az_pos_steps = 18000;
+    placed.el_pos_steps = 1400;
+
+    struct Case { const MachineState *state; const char *line; };
+    static const char *commands[] = {
+        "MOVE,7,AZ,5000,45000",
+        "MOVE,8,EL,5000,10000",
+        "MOVE,9,AZ,5000,-45000",
+        "MOVE,10,AZ,5000,400000",
+        "MOVE,11,AZ,50,1000",
+        "MOVE,12,AZ,5000,1",
+        "MOVE,13,ZZ,5000,1000",
+        "STOP,14",
+        "ESTOP,15",
+        "ZERO,16,ALL",
+        "ZERO,17,AZ,90000",
+        "ZERO,18,EL,-10000",
+        "POS,19",
+        "LIMITS,20",
+        "PING,21",
+        "PIN,22,13,1",
+        "PIN,23,4,0",
+        "PIN,24,5,1",
+        "PIN,25,6,0",
+        "PIN,26,7,1",
+        "PIN,27,25,1",
+        "PIN,28,99,1",
+        "WOBBLE,29",
+        "MOVE,30,AZ",
+    };
+
+    const MachineState *states[] = {&ready, &cold, &half, &moving, &placed};
+    for (size_t si = 0; si < sizeof(states) / sizeof(states[0]); si++) {
+        for (size_t ci = 0;
+             ci < sizeof(commands) / sizeof(commands[0]); ci++) {
+            decide_vector(*states[si], commands[ci]);
+        }
+    }
+}
+
 }  // namespace
 
 int main(int argc, char **argv)
@@ -611,6 +737,7 @@ int main(int argc, char **argv)
     plan_vectors();
     reply_vectors();
     cmd_vectors();
+    decide_vectors();
 
     fprintf(out, "count\t%ld\n", vectors_written);
 

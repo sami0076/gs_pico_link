@@ -109,13 +109,36 @@ constexpr uint PIN_EL_DIR = 7;  // pin 10            - elevation direction
 
 // Which pins the PIN command is allowed to touch.
 //
-// GP12-GP15 are the only ones this board leaves unassigned, so they are the
-// safe place to prove the laptop can set a pin high or low. Everything else
-// belongs to a sensor, a radio or a motor driver, and driving one of those by
-// hand could fight whatever is on the other end.
+// The rule itself lives in motor_config.hpp, with the logic that applies it,
+// because that header stays free of Pico headers and can be host-tested.
+// These checks are what stop the two copies of the pin numbers drifting:
+// change one here and the build stops rather than the meter lying to you.
+static_assert(MOTOR_GPIO_AZ_PUL == PIN_AZ_PUL, "AZ step pin disagrees");
+static_assert(MOTOR_GPIO_AZ_DIR == PIN_AZ_DIR, "AZ direction pin disagrees");
+static_assert(MOTOR_GPIO_EL_PUL == PIN_EL_PUL, "EL step pin disagrees");
+static_assert(MOTOR_GPIO_EL_DIR == PIN_EL_DIR, "EL direction pin disagrees");
+
+// The two groups must not overlap: a pin cannot be both a spare to play
+// with and a motor line whose poking costs an axis its zero.
+static_assert(!gpio_is_spare(MOTOR_GPIO_AZ_PUL), "a motor pin is not spare");
+static_assert(!gpio_is_spare(MOTOR_GPIO_EL_DIR), "a motor pin is not spare");
+
+// The radio is out of reach, on every build.
+static_assert(!gpio_may_be_poked(PIN_SCK), "SPI pin must stay out of reach");
+static_assert(!gpio_may_be_poked(PIN_CS), "SPI pin must stay out of reach");
+static_assert(!gpio_may_be_poked(PIN_DIO0), "radio pin must stay out of reach");
+
+// GP12 and GP13 are NOT spare on every build: they are UART0 to the GPS,
+// used by gs_tx_gps. They are free on gs_motor, which is the only build
+// that answers PIN at all and never touches a GPS - which is why this is
+// a comment and not another static_assert. Worth knowing at a bench: do
+// not go poking GP12 or GP13 on a Pico that has a GPS wired to it.
+static_assert(PIN_GPS_TX == 12 && PIN_GPS_RX == 13,
+              "the GPS moved; check it against the spare pin range");
+
 constexpr bool pin_is_safe_for_test(uint gpio)
 {
-    return gpio >= 12 && gpio <= 15;
+    return gpio <= 29 && gpio_may_be_poked(static_cast<uint8_t>(gpio));
 }
 
 // ============================================================================

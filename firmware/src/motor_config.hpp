@@ -158,6 +158,68 @@ constexpr uint32_t DIR_SETUP_US    = 100;  // settle time after changing DIR
 constexpr uint32_t REVERSE_PAUSE_MS = 1;   // extra pause before reversing
 
 // ============================================================================
+// Which pins the PIN command may touch
+// ============================================================================
+// The wiring itself lives in config.hpp, next to the rest of the pin map.
+// These numbers are repeated here because this header has to stay free of
+// Pico headers to be host-testable, and the decision about what PIN is
+// allowed to do belongs with the logic rather than with the wiring.
+// static_asserts in config.hpp stop the two copies drifting apart.
+//
+// Two kinds of pin are allowed, for two different reasons.
+//
+// GP12-GP15 are spare. Nothing is attached, so setting one high or low
+// proves the laptop can reach the Pico and the meter can read it, and
+// nothing can come of getting it wrong.
+//
+// GP4-GP7 are the motor drivers' step and direction lines. Being able to
+// hold one steady is the only way to check that wiring with a multimeter -
+// a step pulse is five microseconds long and no meter will ever see it.
+// They were shut out of PIN at first for good reason, and the reason has
+// an answer rather than needing a refusal: driving a PUL line low makes
+// the driver take a step that the firmware does not count, so afterwards
+// its idea of where the axis is points one step away from the truth. So
+// poking a PUL line gives up that axis's zero, exactly as an emergency
+// stop does, and the next move is refused until the operator re-zeros.
+//
+// Driving a DIR line moves nothing - the direction is set again at the
+// start of every move - so that one costs nothing and keeps its zero.
+constexpr uint8_t SPARE_GPIO_MIN = 12;
+constexpr uint8_t SPARE_GPIO_MAX = 15;
+
+constexpr uint8_t MOTOR_GPIO_AZ_PUL = 4;
+constexpr uint8_t MOTOR_GPIO_AZ_DIR = 5;
+constexpr uint8_t MOTOR_GPIO_EL_PUL = 6;
+constexpr uint8_t MOTOR_GPIO_EL_DIR = 7;
+
+constexpr bool gpio_is_spare(uint8_t gpio)
+{
+    return gpio >= SPARE_GPIO_MIN && gpio <= SPARE_GPIO_MAX;
+}
+
+constexpr bool gpio_is_motor_step(uint8_t gpio)
+{
+    return gpio == MOTOR_GPIO_AZ_PUL || gpio == MOTOR_GPIO_EL_PUL;
+}
+
+constexpr bool gpio_is_motor_direction(uint8_t gpio)
+{
+    return gpio == MOTOR_GPIO_AZ_DIR || gpio == MOTOR_GPIO_EL_DIR;
+}
+
+constexpr bool gpio_may_be_poked(uint8_t gpio)
+{
+    return gpio_is_spare(gpio) || gpio_is_motor_step(gpio) ||
+           gpio_is_motor_direction(gpio);
+}
+
+// Which axis a motor pin belongs to, for taking its zero away.
+constexpr bool gpio_is_azimuth(uint8_t gpio)
+{
+    return gpio == MOTOR_GPIO_AZ_PUL || gpio == MOTOR_GPIO_AZ_DIR;
+}
+
+// ============================================================================
 // Speed range
 // ============================================================================
 // The floor exists so a typo like "0" cannot start a move that never ends.

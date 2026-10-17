@@ -33,12 +33,14 @@ clock itself.
 microseconds late. Here every pulse lands exactly on its deadline, so the
 fake's `elapsed_us` is a cleaner number than the real one's.
 
-**The stale-busy quirk is reproduced on purpose.** See `feed()`. The
-firmware decides whether it is busy once per loop, before reading the bytes
-that arrived, so two commands inside one USB packet are both judged against
-the state from before the first one ran. That is firmware behaviour, not an
-accident here, and a simulator that quietly fixed it would hide the one
-thing worth knowing.
+**It refuses what the firmware refuses, including the awkward parts.** A
+simulator that is kinder than the machine is worse than none: the dry run
+passes and the bench does not. Two commands arriving in one packet are
+judged one at a time, a move on an unzeroed axis is turned down, and
+poking a step line costs that axis its zero - all because the firmware
+does exactly those things. The contract vectors in
+`tests/test_contract_vectors.py` hold this file to that, decision by
+decision, so the two cannot quietly part company.
 """
 
 from __future__ import annotations
@@ -109,9 +111,48 @@ REVERSE_PAUSE_US = 1000  # REVERSE_PAUSE_MS, only when the direction flips
 MAX_LINE_LEN = 95  # LineReader's buffer
 MSTAT_PERIOD_US = 5_000_000
 
-# Which pins the PIN command may touch, from pin_is_safe_for_test().
-TEST_GPIO_MIN = 12
-TEST_GPIO_MAX = 15
+# Which pins the PIN command may touch, from motor_config.hpp.
+#
+# GP12-GP15 are spare: nothing is attached, so setting one high or low
+# proves the laptop can reach the Pico and a meter can read it.
+#
+# GP4-GP7 are the drivers' step and direction lines. Holding one steady is
+# the only way to check that wiring with a multimeter, because a step pulse
+# is five microseconds long and no meter will ever catch it. Driving a step
+# line makes the driver take a step the firmware did not count, so that
+# axis gives up its zero afterwards - the same as an emergency stop. A
+# direction line moves nothing and keeps its zero.
+SPARE_GPIO_MIN = 12
+SPARE_GPIO_MAX = 15
+
+MOTOR_GPIO_AZ_PUL = 4
+MOTOR_GPIO_AZ_DIR = 5
+MOTOR_GPIO_EL_PUL = 6
+MOTOR_GPIO_EL_DIR = 7
+
+
+def gpio_is_spare(gpio: int) -> bool:
+    return SPARE_GPIO_MIN <= gpio <= SPARE_GPIO_MAX
+
+
+def gpio_is_motor_step(gpio: int) -> bool:
+    return gpio in (MOTOR_GPIO_AZ_PUL, MOTOR_GPIO_EL_PUL)
+
+
+def gpio_is_motor_direction(gpio: int) -> bool:
+    return gpio in (MOTOR_GPIO_AZ_DIR, MOTOR_GPIO_EL_DIR)
+
+
+def gpio_may_be_poked(gpio: int) -> bool:
+    return (
+        gpio_is_spare(gpio)
+        or gpio_is_motor_step(gpio)
+        or gpio_is_motor_direction(gpio)
+    )
+
+
+def gpio_is_azimuth(gpio: int) -> bool:
+    return gpio in (MOTOR_GPIO_AZ_PUL, MOTOR_GPIO_AZ_DIR)
 
 TARGET_NAME = "gs_motor"  # GS_TARGET_NAME, the CMake target that is flashed
 
@@ -637,34 +678,37 @@ def parse_command(line: str) -> Command:
     if cmd_id is None:
         return Command(err=ParseError.SYNTAX)
 
+    # From here on the id is known, so every refusal quotes it back. It is
+    # the only thing tying the complaint to the command that earned it.
+
     c = Command(verb=verb, id=cmd_id)
 
     if verb == "MOVE":
         axis = fields[2].upper()
         if axis not in ("AZ", "EL"):
-            return Command(err=ParseError.BAD_AXIS)
+            return Command(err=ParseError.BAD_AXIS, id=cmd_id)
         mdps = _parse_int(fields[3], 0, 1000000)
         mdeg = _parse_int(fields[4], -1000000, 1000000)
         if mdps is None or mdeg is None:
-            return Command(err=ParseError.SYNTAX)
+            return Command(err=ParseError.SYNTAX, id=cmd_id)
         c.axis, c.mdps, c.mdeg = axis, mdps, mdeg
 
     elif verb == "ZERO":
         axis = fields[2].upper()
         if axis not in ("AZ", "EL", "ALL"):
-            return Command(err=ParseError.BAD_AXIS)
+            return Command(err=ParseError.BAD_AXIS, id=cmd_id)
         c.axis = axis
         if zero_with_angle:
             mdeg = _parse_int(fields[3], -1000000, 1000000)
             if mdeg is None:
-                return Command(err=ParseError.SYNTAX)
+                return Command(err=ParseError.SYNTAX, id=cmd_id)
             c.mdeg, c.has_mdeg = mdeg, True
 
     elif verb == "PIN":
         gpio = _parse_int(fields[2], 0, 29)
         level = _parse_int(fields[3], 0, 1)
         if gpio is None or level is None:
-            return Command(err=ParseError.BAD_GPIO)
+            return Command(err=ParseError.BAD_GPIO, id=cmd_id)
         c.gpio, c.level = gpio, level
 
     return c
@@ -804,12 +848,17 @@ class MotorSim:
         if self._reader.partial:
             self._next_stat_us = now_us + self._heartbeat_us
 
-        busy = self.moving  # read once, exactly as poll_input() does
         for ch in text:
             result = self._reader.feed(ch)
             if result is LineResult.LINE:
                 command = parse_command(self._reader.line)
-                self._handle(command, busy, now_us, out)
+                # Read fresh for every line. The firmware used to work it
+                # out once per batch of received bytes, before reading
+                # them, so two commands in one packet were both judged
+                # against the state from before either had run - a second
+                # MOVE restarted the axis and the first move's DONE was
+                # never sent. Fixed in the firmware in 7.9b; mirrored here.
+                self._handle(command, self.moving, now_us, out)
             elif result is LineResult.TOO_LONG:
                 # Id 0: the line was thrown away, so there is no id to quote.
                 out.append(_err(0, "toolong", ""))
@@ -982,10 +1031,22 @@ class MotorSim:
         out.append(_ack(c.id, "ZERO"))
 
     def _do_pin(self, c: Command, out: list[str]) -> None:
-        if not TEST_GPIO_MIN <= c.gpio <= TEST_GPIO_MAX:
-            out.append(_err(c.id, "gpio", "use GP12-GP15"))
+        if not gpio_may_be_poked(c.gpio):
+            # Sixteen characters is all the firmware keeps of a detail, so
+            # the hint has to fit in that or arrive half-eaten.
+            out.append(_err(c.id, "gpio", "GP4-7 or GP12-15"))
             return
+
         self.pins[c.gpio] = c.level
+
+        # Driving a step line makes the driver take a step nobody counted,
+        # so that axis no longer knows where it is.
+        if gpio_is_motor_step(c.gpio):
+            if gpio_is_azimuth(c.gpio):
+                self.az.zeroed = False
+            else:
+                self.el.zeroed = False
+
         out.append(_pin(c.id, c.gpio, c.level))
 
 
