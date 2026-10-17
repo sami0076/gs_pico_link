@@ -141,7 +141,7 @@ class Session:
         self.clock = clock
         self.default_timeout_s = default_timeout_s
 
-        self._on_chatter = on_chatter
+        self.on_chatter = on_chatter
         self.chatter: deque[p.Reply] = deque(maxlen=CHATTER_KEPT)
 
         self._buf = b""
@@ -236,8 +236,8 @@ class Session:
 
         if isinstance(record, (p.Mstat, p.Info)):
             self.chatter.append(record)
-            if self._on_chatter is not None:
-                self._on_chatter(record)
+            if self.on_chatter is not None:
+                self.on_chatter(record)
 
         return record
 
@@ -255,6 +255,27 @@ class Session:
             if record is None:
                 return seen
             seen.append(record)
+
+    def drain_until_quiet(
+        self, quiet_s: float = 0.05, max_s: float = 1.0
+    ) -> list[p.Reply]:
+        """Read until the Pico stops talking, or until `max_s` is up.
+
+        Better than waiting a fixed time for the banner: a Pico that
+        answers at once is not kept waiting, and one that is still
+        printing is not cut off mid-way. Used at startup, where how long
+        the banner takes to arrive depends on the port rather than on us.
+        """
+        seen = []
+        hard_stop = self.clock() + max_s
+        while True:
+            until = min(self.clock() + quiet_s, hard_stop)
+            record = self._next_record(until)
+            if record is None:
+                return seen
+            seen.append(record)
+            if self.clock() >= hard_stop:
+                return seen
 
     # --- sending ------------------------------------------------------------
 
