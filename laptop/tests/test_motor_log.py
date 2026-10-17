@@ -267,7 +267,7 @@ def test_the_prompt_logs_a_move_and_takes_the_reading(tmp_path):
 
     assert code == 0
     assert "row 1 - type 'true <degrees>'" in text
-    assert "out by 0.094 deg" in text
+    assert "out by 0.104 deg" in text
 
     rows = read_back(path)
     assert rows[0]["true_deg"] == "45.100"

@@ -54,7 +54,12 @@ from enum import Enum
 # The numbers, copied from motor_config.hpp
 # ============================================================================
 # Copied, not computed: the firmware is the original and this is the copy.
-# The contract test in a later chunk is what stops the two drifting apart.
+# The contract test is what stops the two drifting apart.
+#
+# The 1600 pulses per motor turn behind these numbers is a DIP switch
+# setting on each driver (1 on, 2 off, 3 on, 4 on), checked by eye at the
+# bench. Nothing in software can verify it: set the switches to 800 and
+# every angle silently comes out double.
 # Every angle is at the output - the antenna itself - with the gearbox
 # already folded into steps_num/steps_den.
 
@@ -77,8 +82,8 @@ V_START_MDPS = 5000  # 5 deg/sec, the speed a move starts and ends at
 
 AZ_SPEC = AxisSpec(
     name="AZ",
-    steps_num=3200,  # 800 driver pulses/rev x 160/7 gearing, over 360 deg
-    steps_den=63,  # -> 50.7937 steps per output degree
+    steps_num=6400,  # 1600 driver pulses/rev x 160/7 gearing, over 360 deg
+    steps_den=63,  # -> 101.5873 steps per output degree
     min_mdeg=0,
     max_mdeg=360000,
     invert_dir=False,
@@ -88,8 +93,8 @@ AZ_SPEC = AxisSpec(
 
 EL_SPEC = AxisSpec(
     name="EL",
-    steps_num=2000,  # 800 pulses/rev x 100/7 gearing
-    steps_den=63,  # -> 31.746 steps per output degree
+    steps_num=4000,  # 1600 pulses/rev x 100/7 gearing
+    steps_den=63,  # -> 63.492 steps per output degree
     min_mdeg=0,  # conservative; the real stop is at -10 deg
     max_mdeg=45000,  # conservative; the real stop is at +90 deg
     invert_dir=False,

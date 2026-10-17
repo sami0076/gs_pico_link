@@ -135,7 +135,7 @@ def test_zero_then_position(live):
 
 def test_zero_can_say_what_angle_we_are_at(live):
     live.zero("AZ", 90.0)
-    assert live.position().az_steps == 4571  # 90 degrees of azimuth
+    assert live.position().az_steps == 9143  # 90 degrees of azimuth
 
 
 def test_setting_a_test_pin(live):
@@ -153,14 +153,14 @@ def test_a_move_reports_both_what_was_planned_and_what_happened(ready):
     assert isinstance(outcome, sn.MoveOutcome)
     assert outcome.ok is True
     assert outcome.plan.id == outcome.done.id  # the same move, tied together
-    assert outcome.plan.steps == 2286
-    assert outcome.done.steps_done == 2286
-    assert outcome.done.to_mdeg == 45006  # quantised, not 45.000
+    assert outcome.plan.steps == 4571
+    assert outcome.done.steps_done == 4571
+    assert outcome.done.to_mdeg == 44996  # quantised, not 45.000
 
 
 def test_the_predicted_time_is_a_hair_over_the_measured_one(ready):
     # est counts the gap before the first pulse; elapsed is first pulse to
-    # last. The difference should be one step interval - about 3937 us for
+    # last. The difference should be one step interval - about 1968 us for
     # a 5 deg/sec azimuth move - and nothing like a second.
     outcome = ready.move("AZ", 5.0, 45.0)
     assert 0 < outcome.overshoot_us < 10_000
@@ -168,7 +168,7 @@ def test_the_predicted_time_is_a_hair_over_the_measured_one(ready):
 
 def test_the_position_follows_the_move(ready):
     ready.move("AZ", 90.0, 10.0)
-    assert ready.position().az_steps == 508
+    assert ready.position().az_steps == 1016
 
 
 def test_a_refused_move_raises_with_the_reason_attached(ready):
@@ -409,6 +409,6 @@ def test_it_all_works_through_pyserial_too():
             s.zero("ALL")
             outcome = s.move("AZ", 90.0, 10.0)
             assert outcome.ok
-            assert s.position().az_steps == 508
+            assert s.position().az_steps == 1016
     finally:
         server.stop()

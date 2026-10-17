@@ -175,23 +175,23 @@ is wrong, every number you write down today is wrong too, and nothing in
 the software can tell.
 
 **1. The row of eight small switches — pulses per turn.**
-The code assumes **800**. The manual's table says that is:
+The code is built for **1600 pulses per motor turn**, which the CL57T
+manual's table calls microstep 8:
 
 ```
-switch 1: off    switch 2: on    switch 3: on    switch 4: on
+switch 1: ON     switch 2: off    switch 3: ON     switch 4: ON
 ```
 
-> **Found on this hardware (17 Oct 2026): switches 1, 3 and 4 on, which
-> is 1600 pulses per turn, not 800.** Both boxes. Left that way, every
-> move comes out at exactly half the angle asked for — command 45
-> degrees, get 22.5 — and nothing in the software can tell, because the
-> Pico counts the pulses it sent and believes them.
->
-> Fixed by moving two switches: **1 off, 2 on**. Keeping 1600 instead
-> would work and would double the resolution, but it means doubling
-> `steps_num` for both axes in `motor_config.hpp` (azimuth 6400/63,
-> elevation 4000/63), a rebuild, a reflash, regenerating the contract
-> vectors, and changing the expected numbers on this page.
+That is how the boxes on this machine are set, checked by eye at the bench
+on 17 Oct 2026, and `motor_config.hpp` follows the hardware rather than the
+other way round.
+
+> **This is the one number no software can check.** The Pico counts the
+> pulses it sends out and believes them. If a driver is swapped or reset to
+> 800 (switch 1 off, switch 2 on), every angle comes out at exactly double
+> what you asked for, the Pico reports the angle it meant to turn, and
+> nothing anywhere will contradict it. Check these four switches before
+> trusting any number on this page.
 
 Count the gear teeth too, if you have not already: azimuth should be a 10:1
 planetary gearbox and a 32:14 gear pair, elevation 20:14. If a gear has
@@ -258,7 +258,7 @@ and, usually, the Pico's own startup lines:
 === gs_pico_link gs_motor <hash> ===
 [motor] pins AZ PUL=GP4 DIR=GP5  EL PUL=GP6 DIR=GP7  idle HIGH OK
 [motor] active low: PUL rests HIGH and is pulled LOW to step
-[motor] ready az=50.794 st/deg el=31.746 st/deg
+[motor] ready az=101.587 st/deg el=63.492 st/deg
 [motor] limits az 0.000..360.000  el 0.000..45.000
 [motor] NOT ZEROED - send ZERO before any MOVE
 ```
@@ -326,8 +326,8 @@ motor> move az 5 1
 **Expect** a plan line, a short wait, and a done line:
 
 ```
-  plan   +51 steps  0.000 -> 1.004 deg  at 5.000 deg/s  flat out  about 0.20 s
-  done   finished  +51 steps in 0.20 s  (predicted 0.20 s)
+  plan   +102 steps  0.000 -> 1.004 deg  at 5.000 deg/s  flat out  about 0.20 s
+  done   finished  +102 steps in 0.20 s  (predicted 0.20 s)
          now at 1.004 deg
 ```
 
@@ -349,9 +349,10 @@ motor> move az 5 45
 motor> true <whatever the protractor says>
 ```
 
-The predicted angle will read **45.006**, not 45.000. That is not an error:
-a step is a fixed size and 45 degrees is 2285.7 of them, so the Pico rounds
-to 2286 and tells you honestly where that lands.
+The predicted angle will read **44.996**, not 45.000. That is not an error:
+a step is a fixed size and 45 degrees is 4571.4 of them, so the Pico rounds
+to 4571 and tells you honestly where that lands. At 1600 pulses per turn a
+step is about 0.0098 degrees, so the gap is never more than half of that.
 
 Compare the two times on the `done` line. They should agree to within a few
 hundredths of a second. If "measured" is much longer than "predicted", the

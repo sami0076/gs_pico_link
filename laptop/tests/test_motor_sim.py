@@ -56,10 +56,10 @@ def zeroed_sim(**kwargs):
 @pytest.mark.parametrize(
     "mdeg, steps",
     [
-        (45000, 2286),  # 45 deg = 2285.71, the procedure's first command
-        (-45000, -2286),  # symmetric, which is why rounding goes away from 0
+        (45000, 4571),  # 45 deg = 4571.43, the procedure's first command
+        (-45000, -4571),  # symmetric: rounding goes away from zero
         (0, 0),
-        (360000, 18286),
+        (360000, 36571),
     ],
 )
 def test_azimuth_degrees_to_steps(mdeg, steps):
@@ -69,9 +69,9 @@ def test_azimuth_degrees_to_steps(mdeg, steps):
 @pytest.mark.parametrize(
     "steps, mdeg",
     [
-        (2286, 45006),  # 2286 steps is 45.006 deg, not 45.000
-        (-2286, -45006),
-        (4571, 89992),  # "I am at 90 degrees" is really 89.992
+        (4571, 44996),  # 4571 steps is 44.996 deg, not 45.000
+        (-4571, -44996),
+        (9143, 90001),  # "I am at 90 degrees" is really 90.001
     ],
 )
 def test_azimuth_steps_to_degrees(steps, mdeg):
@@ -82,7 +82,7 @@ def test_steps_and_degrees_do_not_round_trip():
     # Deliberate: a step is a fixed size and most angles do not land on one.
     # The difference is the honest answer and belongs in the test data.
     there = sim.mdeg_to_steps(sim.AZ_SPEC, 45000)
-    assert sim.steps_to_mdeg(sim.AZ_SPEC, there) == 45006
+    assert sim.steps_to_mdeg(sim.AZ_SPEC, there) == 44996
 
 
 # ============================================================================
@@ -92,29 +92,30 @@ def test_steps_and_degrees_do_not_round_trip():
 
 def test_plan_line_matches_the_firmware_character_for_character():
     # From test_motor_reply.cpp:
-    #     "PLAN,7,AZ,2286,89992,134997,5000,TRAP,8999982\n"
-    # Every field has to agree, est_us included - that last number is the
-    # one that would drift if the speed maths here were done in Python's
-    # wider floats instead of being held to the firmware's 32-bit ones.
+    #     "PLAN,7,AZ,4571,90001,134997,5000,TRAP,8995728\n"
+    # Every field has to agree, est_us included. The contract vectors check
+    # this and a great deal more automatically; this one is here because a
+    # single line of real output, written out in full, is the quickest way
+    # to see what the two ends are agreeing about.
     s = sim.MotorSim()
-    s.feed(p.encode(p.zero(1, "AZ", 89.992)), 0)
+    s.feed(p.encode(p.zero(1, "AZ", 90.0)), 0)
 
     out = s.feed(p.encode(p.move(7, "AZ", 5.0, 45.0)), 0)
 
     assert out == [
         "ACK,7,MOVE",
-        "PLAN,7,AZ,2286,89992,134997,5000,TRAP,8999982",
+        "PLAN,7,AZ,4571,90001,134997,5000,TRAP,8995728",
     ]
 
 
 def test_a_move_at_the_starting_speed_has_no_ramp():
     # 5 deg/sec is where moves begin, so a move at that speed is flat out
-    # from the first step: no ramp, and 3937 us between every pulse.
+    # from the first step: no ramp, and 1968 us between every pulse.
     _, m = sim.plan_move(sim.AZ_SPEC, 0, 45000, 5000)
     assert m.n_ramp == 0
     assert m.triangular is False
-    assert sim.interval_us(m, 0) == pytest.approx(3937, abs=2)
-    assert sim.interval_us(m, m.n_steps - 1) == pytest.approx(3937, abs=2)
+    assert sim.interval_us(m, 0) == pytest.approx(1968, abs=2)
+    assert sim.interval_us(m, m.n_steps - 1) == pytest.approx(1968, abs=2)
     assert m.est_us == pytest.approx(9_000_000, abs=20_000)
 
 
@@ -122,9 +123,9 @@ def test_a_fast_move_speeds_up_and_slows_down_symmetrically():
     _, m = sim.plan_move(sim.AZ_SPEC, 0, 180000, 90000)
     assert m.n_ramp > 0
     # First and last steps run at the starting speed; the middle is fastest.
-    assert sim.interval_us(m, 0) == pytest.approx(3937, abs=2)
-    assert sim.interval_us(m, m.n_steps - 1) == pytest.approx(3937, abs=2)
-    assert sim.interval_us(m, m.n_steps // 2) == pytest.approx(218, abs=2)
+    assert sim.interval_us(m, 0) == pytest.approx(1968, abs=2)
+    assert sim.interval_us(m, m.n_steps - 1) == pytest.approx(1968, abs=2)
+    assert sim.interval_us(m, m.n_steps // 2) == pytest.approx(109, abs=2)
     # The ramp up and the ramp down are mirror images.
     for i in range(m.n_ramp):
         assert sim.interval_us(m, i) == sim.interval_us(m, m.n_steps - 1 - i)
@@ -320,7 +321,7 @@ def test_the_move_takes_one_interval_less_than_the_plan_said():
     plan = records(out)[1]
 
     done = records(s.poll(60 * SEC))[0]
-    first_gap = 3937
+    first_gap = 1968
     assert plan.est_us - done.elapsed_us == pytest.approx(first_gap, abs=2)
 
 
@@ -331,8 +332,8 @@ def test_position_is_reported_in_steps_as_well_as_degrees():
 
     pos = records(s.feed(p.encode(p.pos(3)), 60 * SEC))[0]
     assert isinstance(pos, p.Pos)
-    assert pos.az_steps == 2286
-    assert pos.az_mdeg == 45006  # the quantised angle, not 45000
+    assert pos.az_steps == 4571
+    assert pos.az_mdeg == 44996  # the quantised angle, not 45000
     assert pos.zeroed is True
 
 
@@ -358,7 +359,7 @@ def test_stop_ramps_down_and_reports_an_abort():
     assert isinstance(done, p.Done)
     assert done.id == 2  # the move's id, not the stop's
     assert done.ok is False
-    assert 0 < abs(done.steps_done) < 2286
+    assert 0 < abs(done.steps_done) < 4571
     # The axis is still trusted: a controlled stop keeps the count honest.
     assert s.az.zeroed is True
 
@@ -551,7 +552,7 @@ def test_the_banner_reads_as_information_not_records():
 
 def test_the_banner_quotes_the_same_numbers_the_firmware_prints():
     text = "\n".join(sim.MotorSim().banner())
-    assert "az=50.794 st/deg el=31.746 st/deg" in text
+    assert "az=101.587 st/deg el=63.492 st/deg" in text
     assert "limits az 0.000..360.000  el 0.000..45.000" in text
     assert "NOT ZEROED" in text
 

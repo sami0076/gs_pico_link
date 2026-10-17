@@ -45,16 +45,16 @@ static void test_plan()
     const size_t len = format_plan(b, sizeof(b), 7, AxisId::Az, m);
     CHECK(len > 0);
 
-    // 2286 steps, and no ramp at all at 5 deg/sec.
+    // 4571 steps, and no ramp at all at 5 deg/sec.
     //
-    // Note the start angle is 89992, not 90000. "I am at 90 degrees" is
-    // stored as 4571 steps, and 4571 steps is 89.992 degrees - the zero point
+    // Note the start angle is 90001, not 90000. "I am at 90 degrees" is
+    // stored as 9143 steps, and 9143 steps is 90.001 degrees - the zero point
     // is quantised just like everything else. The end is 134997, which is
-    // 89992 plus the 45006 that 2286 steps really covers.
+    // 90001 plus the 44996 that 4571 steps really covers.
     //
-    // 2286 steps x 3937 us is 8999982 us, just under the 9 seconds that
+    // 4571 steps x 1968 us is 8995728 us, just under the 9 seconds that
     // 45 degrees at 5 deg/sec would ideally take.
-    expect(b, len, "PLAN,7,AZ,2286,89992,134997,5000,TRAP,8999982\n",
+    expect(b, len, "PLAN,7,AZ,4571,90001,134997,5000,TRAP,8995728\n",
            "plan 45 deg at 5 deg/sec");
 }
 
@@ -74,9 +74,9 @@ static void test_done()
 {
     char b[MAX_REPLY_LEN];
 
-    expect(b, format_done(b, sizeof(b), 7, AxisId::Az, true, 2286, 89992,
+    expect(b, format_done(b, sizeof(b), 7, AxisId::Az, true, 4571, 90001,
                           134997, 9001234),
-           "DONE,7,AZ,OK,2286,89992,134997,9001234\n", "done ok");
+           "DONE,7,AZ,OK,4571,90001,134997,9001234\n", "done ok");
 
     // An aborted move reports how far it actually got.
     expect(b, format_done(b, sizeof(b), 8, AxisId::El, false, -400, 45000,
@@ -88,15 +88,15 @@ static void test_pos()
 {
     char b[MAX_REPLY_LEN];
 
-    expect(b, format_pos(b, sizeof(b), 3, 89992, 0, 4571, 0, true),
-           "POS,3,89992,0,4571,0,ZEROED\n", "pos zeroed");
+    expect(b, format_pos(b, sizeof(b), 3, 90001, 0, 9143, 0, true),
+           "POS,3,90001,0,9143,0,ZEROED\n", "pos zeroed");
 
     expect(b, format_pos(b, sizeof(b), 4, 0, 0, 0, 0, false),
            "POS,4,0,0,0,0,UNZEROED\n", "pos unzeroed");
 
     // Negative positions must survive the round trip.
-    expect(b, format_pos(b, sizeof(b), 5, -45006, -10000, -2286, -317, true),
-           "POS,5,-45006,-10000,-2286,-317,ZEROED\n", "pos negative");
+    expect(b, format_pos(b, sizeof(b), 5, -44996, -10000, -4571, -635, true),
+           "POS,5,-44996,-10000,-4571,-635,ZEROED\n", "pos negative");
 }
 
 static void test_pin()
@@ -127,8 +127,8 @@ static void test_mstat()
     char b[MAX_REPLY_LEN];
 
     // No id on this one - it is not a reply to anything.
-    expect(b, format_mstat(b, sizeof(b), 42, 89992, 0, false),
-           "MSTAT,42,89992,0,IDLE\n", "mstat idle");
+    expect(b, format_mstat(b, sizeof(b), 42, 90001, 0, false),
+           "MSTAT,42,90001,0,IDLE\n", "mstat idle");
     expect(b, format_mstat(b, sizeof(b), 43, 91000, 0, true),
            "MSTAT,43,91000,0,MOVING\n", "mstat moving");
 }

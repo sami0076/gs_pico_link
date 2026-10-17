@@ -66,9 +66,9 @@ void test_a_move_is_acknowledged_then_planned()
     CHECK(d.act == Act::StartMove);
     CHECK(d.axis == AxisId::Az);
     CHECK_EQ(d.id, 7);
-    CHECK_EQ(d.move.steps, 2286);
+    CHECK_EQ(d.move.steps, 4571);
     expect_line(d.line1, d.len1, "ACK,7,MOVE\n", "move ack");
-    expect_line(d.line2, d.len2, "PLAN,7,AZ,2286,0,45006,5000,TRAP,8999982\n",
+    expect_line(d.line2, d.len2, "PLAN,7,AZ,4571,0,44996,5000,TRAP,8995728\n",
                 "move plan");
 }
 
@@ -176,7 +176,7 @@ void test_zeroing_one_axis_at_an_angle()
     const Decision d = decide_line("ZERO,15,AZ,90000", ready());
     CHECK(d.zero_az);
     CHECK(!d.zero_el);
-    CHECK_EQ(d.az_steps, 4571);  // 90 degrees of azimuth
+    CHECK_EQ(d.az_steps, 9143);  // 90 degrees of azimuth
 }
 
 // ---------------------------------------------------------------------------
@@ -235,13 +235,13 @@ void test_any_other_pin_is_refused_with_advice()
 void test_position_says_unzeroed_unless_both_axes_are_placed()
 {
     MachineState s = ready();
-    s.az_pos_steps = 4571;
+    s.az_pos_steps = 9143;  // 90 degrees of azimuth
     expect_line(decide_line("POS,21", s).line1, decide_line("POS,21", s).len1,
-                "POS,21,89992,0,4571,0,ZEROED\n", "pos zeroed");
+                "POS,21,90001,0,9143,0,ZEROED\n", "pos zeroed");
 
     s.el_zeroed = false;
     expect_line(decide_line("POS,22", s).line1, decide_line("POS,22", s).len1,
-                "POS,22,89992,0,4571,0,UNZEROED\n", "pos unzeroed");
+                "POS,22,90001,0,9143,0,UNZEROED\n", "pos unzeroed");
 }
 
 void test_ping_and_limits()

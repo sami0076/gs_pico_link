@@ -88,7 +88,7 @@ def test_position_says_when_it_has_no_zero_yet():
 
 def test_position_shows_steps_as_well_as_degrees():
     _, text = ready("move az 90 10", "pos")
-    assert "az 10.001 deg (508 steps)" in text
+    assert "az 10.001 deg (1016 steps)" in text
 
 
 def test_help_lists_every_command_it_accepts():
@@ -107,18 +107,18 @@ def test_help_lists_every_command_it_accepts():
 def test_a_move_prints_the_plan_and_then_the_result():
     _, text = ready("move az 5 45")
 
-    assert "+2286 steps" in text
-    assert "0.000 -> 45.006 deg" in text  # the quantised end angle
+    assert "+4571 steps" in text
+    assert "0.000 -> 44.996 deg" in text  # the quantised end angle
     assert "at 5.000 deg/s" in text
     assert "finished" in text
-    assert "now at 45.006 deg" in text
+    assert "now at 44.996 deg" in text
 
 
 def test_a_move_reports_predicted_and_measured_time_side_by_side():
     # The two numbers next to each other are what tells you the step loop
     # is keeping real time rather than drifting.
     _, text = ready("move az 5 45")
-    assert "in 9.00 s  (predicted 9.00 s)" in text
+    assert "in 8.99 s  (predicted 9.00 s)" in text
 
 
 def test_a_negative_angle_turns_back():
@@ -162,7 +162,7 @@ def test_zero_with_no_arguments_means_everything_at_nothing():
 
 def test_zero_can_be_told_the_angle_on_the_protractor():
     _, text = run("zero az 90", "pos")
-    assert "az 89.992 deg (4571 steps)" in text  # 90 deg is 4571 steps
+    assert "az 90.001 deg (9143 steps)" in text  # 90 deg is 9143 steps
 
 
 def test_a_bare_number_means_all_axes():
@@ -171,7 +171,7 @@ def test_a_bare_number_means_all_axes():
     _, text = run("zero 90", "pos")
     # Each axis lands on its own nearest whole step, so the two read back
     # as slightly different angles from the same command.
-    assert "az 89.992 deg" in text
+    assert "az 90.001 deg" in text
     assert "el 89.996 deg" in text
 
 
@@ -271,7 +271,7 @@ def test_it_reads_a_piped_script_and_echoes_it():
     # Echoed, so the transcript reads as a session rather than as answers
     # to invisible questions.
     assert "motor> move az 90 10" in text
-    assert "508 steps" in text
+    assert "1016 steps" in text
 
 
 def test_quit_stops_reading():

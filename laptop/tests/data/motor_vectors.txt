@@ -5,151 +5,151 @@
 version	1
 conv	dir=to_steps	axis=AZ	mdeg=0	steps=0
 conv	dir=to_steps	axis=AZ	mdeg=1	steps=0
-conv	dir=to_steps	axis=AZ	mdeg=499	steps=25
-conv	dir=to_steps	axis=AZ	mdeg=500	steps=25
-conv	dir=to_steps	axis=AZ	mdeg=501	steps=25
-conv	dir=to_steps	axis=AZ	mdeg=999	steps=51
-conv	dir=to_steps	axis=AZ	mdeg=1000	steps=51
-conv	dir=to_steps	axis=AZ	mdeg=1500	steps=76
-conv	dir=to_steps	axis=AZ	mdeg=45000	steps=2286
-conv	dir=to_steps	axis=AZ	mdeg=90000	steps=4571
-conv	dir=to_steps	axis=AZ	mdeg=135000	steps=6857
-conv	dir=to_steps	axis=AZ	mdeg=180000	steps=9143
-conv	dir=to_steps	axis=AZ	mdeg=359999	steps=18286
-conv	dir=to_steps	axis=AZ	mdeg=360000	steps=18286
+conv	dir=to_steps	axis=AZ	mdeg=499	steps=51
+conv	dir=to_steps	axis=AZ	mdeg=500	steps=51
+conv	dir=to_steps	axis=AZ	mdeg=501	steps=51
+conv	dir=to_steps	axis=AZ	mdeg=999	steps=101
+conv	dir=to_steps	axis=AZ	mdeg=1000	steps=102
+conv	dir=to_steps	axis=AZ	mdeg=1500	steps=152
+conv	dir=to_steps	axis=AZ	mdeg=45000	steps=4571
+conv	dir=to_steps	axis=AZ	mdeg=90000	steps=9143
+conv	dir=to_steps	axis=AZ	mdeg=135000	steps=13714
+conv	dir=to_steps	axis=AZ	mdeg=180000	steps=18286
+conv	dir=to_steps	axis=AZ	mdeg=359999	steps=36571
+conv	dir=to_steps	axis=AZ	mdeg=360000	steps=36571
 conv	dir=to_steps	axis=AZ	mdeg=-1	steps=0
-conv	dir=to_steps	axis=AZ	mdeg=-500	steps=-25
-conv	dir=to_steps	axis=AZ	mdeg=-1000	steps=-51
-conv	dir=to_steps	axis=AZ	mdeg=-45000	steps=-2286
-conv	dir=to_steps	axis=AZ	mdeg=-90000	steps=-4571
-conv	dir=to_steps	axis=AZ	mdeg=-360000	steps=-18286
-conv	dir=to_steps	axis=AZ	mdeg=12345	steps=627
-conv	dir=to_steps	axis=AZ	mdeg=-12345	steps=-627
-conv	dir=to_steps	axis=AZ	mdeg=1000000	steps=50794
-conv	dir=to_steps	axis=AZ	mdeg=-1000000	steps=-50794
+conv	dir=to_steps	axis=AZ	mdeg=-500	steps=-51
+conv	dir=to_steps	axis=AZ	mdeg=-1000	steps=-102
+conv	dir=to_steps	axis=AZ	mdeg=-45000	steps=-4571
+conv	dir=to_steps	axis=AZ	mdeg=-90000	steps=-9143
+conv	dir=to_steps	axis=AZ	mdeg=-360000	steps=-36571
+conv	dir=to_steps	axis=AZ	mdeg=12345	steps=1254
+conv	dir=to_steps	axis=AZ	mdeg=-12345	steps=-1254
+conv	dir=to_steps	axis=AZ	mdeg=1000000	steps=101587
+conv	dir=to_steps	axis=AZ	mdeg=-1000000	steps=-101587
 conv	dir=to_mdeg	axis=AZ	steps=0	mdeg=0
-conv	dir=to_mdeg	axis=AZ	steps=1	mdeg=20
-conv	dir=to_mdeg	axis=AZ	steps=2	mdeg=39
-conv	dir=to_mdeg	axis=AZ	steps=-1	mdeg=-20
-conv	dir=to_mdeg	axis=AZ	steps=-2	mdeg=-39
-conv	dir=to_mdeg	axis=AZ	steps=317	mdeg=6241
-conv	dir=to_mdeg	axis=AZ	steps=508	mdeg=10001
-conv	dir=to_mdeg	axis=AZ	steps=1016	mdeg=20003
-conv	dir=to_mdeg	axis=AZ	steps=2286	mdeg=45006
-conv	dir=to_mdeg	axis=AZ	steps=-2286	mdeg=-45006
-conv	dir=to_mdeg	axis=AZ	steps=2857	mdeg=56247
-conv	dir=to_mdeg	axis=AZ	steps=4571	mdeg=89992
-conv	dir=to_mdeg	axis=AZ	steps=9143	mdeg=180003
-conv	dir=to_mdeg	axis=AZ	steps=18286	mdeg=360006
-conv	dir=to_mdeg	axis=AZ	steps=-18286	mdeg=-360006
-conv	dir=to_mdeg	axis=AZ	steps=12345	mdeg=243042
+conv	dir=to_mdeg	axis=AZ	steps=1	mdeg=10
+conv	dir=to_mdeg	axis=AZ	steps=2	mdeg=20
+conv	dir=to_mdeg	axis=AZ	steps=-1	mdeg=-10
+conv	dir=to_mdeg	axis=AZ	steps=-2	mdeg=-20
+conv	dir=to_mdeg	axis=AZ	steps=317	mdeg=3120
+conv	dir=to_mdeg	axis=AZ	steps=508	mdeg=5001
+conv	dir=to_mdeg	axis=AZ	steps=1016	mdeg=10001
+conv	dir=to_mdeg	axis=AZ	steps=2286	mdeg=22503
+conv	dir=to_mdeg	axis=AZ	steps=-2286	mdeg=-22503
+conv	dir=to_mdeg	axis=AZ	steps=2857	mdeg=28124
+conv	dir=to_mdeg	axis=AZ	steps=4571	mdeg=44996
+conv	dir=to_mdeg	axis=AZ	steps=9143	mdeg=90001
+conv	dir=to_mdeg	axis=AZ	steps=18286	mdeg=180003
+conv	dir=to_mdeg	axis=AZ	steps=-18286	mdeg=-180003
+conv	dir=to_mdeg	axis=AZ	steps=12345	mdeg=121521
 conv	dir=to_steps	axis=EL	mdeg=0	steps=0
 conv	dir=to_steps	axis=EL	mdeg=1	steps=0
-conv	dir=to_steps	axis=EL	mdeg=499	steps=16
-conv	dir=to_steps	axis=EL	mdeg=500	steps=16
-conv	dir=to_steps	axis=EL	mdeg=501	steps=16
-conv	dir=to_steps	axis=EL	mdeg=999	steps=32
-conv	dir=to_steps	axis=EL	mdeg=1000	steps=32
-conv	dir=to_steps	axis=EL	mdeg=1500	steps=48
-conv	dir=to_steps	axis=EL	mdeg=45000	steps=1429
-conv	dir=to_steps	axis=EL	mdeg=90000	steps=2857
-conv	dir=to_steps	axis=EL	mdeg=135000	steps=4286
-conv	dir=to_steps	axis=EL	mdeg=180000	steps=5714
-conv	dir=to_steps	axis=EL	mdeg=359999	steps=11429
-conv	dir=to_steps	axis=EL	mdeg=360000	steps=11429
+conv	dir=to_steps	axis=EL	mdeg=499	steps=32
+conv	dir=to_steps	axis=EL	mdeg=500	steps=32
+conv	dir=to_steps	axis=EL	mdeg=501	steps=32
+conv	dir=to_steps	axis=EL	mdeg=999	steps=63
+conv	dir=to_steps	axis=EL	mdeg=1000	steps=63
+conv	dir=to_steps	axis=EL	mdeg=1500	steps=95
+conv	dir=to_steps	axis=EL	mdeg=45000	steps=2857
+conv	dir=to_steps	axis=EL	mdeg=90000	steps=5714
+conv	dir=to_steps	axis=EL	mdeg=135000	steps=8571
+conv	dir=to_steps	axis=EL	mdeg=180000	steps=11429
+conv	dir=to_steps	axis=EL	mdeg=359999	steps=22857
+conv	dir=to_steps	axis=EL	mdeg=360000	steps=22857
 conv	dir=to_steps	axis=EL	mdeg=-1	steps=0
-conv	dir=to_steps	axis=EL	mdeg=-500	steps=-16
-conv	dir=to_steps	axis=EL	mdeg=-1000	steps=-32
-conv	dir=to_steps	axis=EL	mdeg=-45000	steps=-1429
-conv	dir=to_steps	axis=EL	mdeg=-90000	steps=-2857
-conv	dir=to_steps	axis=EL	mdeg=-360000	steps=-11429
-conv	dir=to_steps	axis=EL	mdeg=12345	steps=392
-conv	dir=to_steps	axis=EL	mdeg=-12345	steps=-392
-conv	dir=to_steps	axis=EL	mdeg=1000000	steps=31746
-conv	dir=to_steps	axis=EL	mdeg=-1000000	steps=-31746
+conv	dir=to_steps	axis=EL	mdeg=-500	steps=-32
+conv	dir=to_steps	axis=EL	mdeg=-1000	steps=-63
+conv	dir=to_steps	axis=EL	mdeg=-45000	steps=-2857
+conv	dir=to_steps	axis=EL	mdeg=-90000	steps=-5714
+conv	dir=to_steps	axis=EL	mdeg=-360000	steps=-22857
+conv	dir=to_steps	axis=EL	mdeg=12345	steps=784
+conv	dir=to_steps	axis=EL	mdeg=-12345	steps=-784
+conv	dir=to_steps	axis=EL	mdeg=1000000	steps=63492
+conv	dir=to_steps	axis=EL	mdeg=-1000000	steps=-63492
 conv	dir=to_mdeg	axis=EL	steps=0	mdeg=0
-conv	dir=to_mdeg	axis=EL	steps=1	mdeg=32
-conv	dir=to_mdeg	axis=EL	steps=2	mdeg=63
-conv	dir=to_mdeg	axis=EL	steps=-1	mdeg=-32
-conv	dir=to_mdeg	axis=EL	steps=-2	mdeg=-63
-conv	dir=to_mdeg	axis=EL	steps=317	mdeg=9986
-conv	dir=to_mdeg	axis=EL	steps=508	mdeg=16002
-conv	dir=to_mdeg	axis=EL	steps=1016	mdeg=32004
-conv	dir=to_mdeg	axis=EL	steps=2286	mdeg=72009
-conv	dir=to_mdeg	axis=EL	steps=-2286	mdeg=-72009
-conv	dir=to_mdeg	axis=EL	steps=2857	mdeg=89996
-conv	dir=to_mdeg	axis=EL	steps=4571	mdeg=143987
-conv	dir=to_mdeg	axis=EL	steps=9143	mdeg=288005
-conv	dir=to_mdeg	axis=EL	steps=18286	mdeg=576009
-conv	dir=to_mdeg	axis=EL	steps=-18286	mdeg=-576009
-conv	dir=to_mdeg	axis=EL	steps=12345	mdeg=388868
-plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=2286	from_mdeg=0	to_mdeg=45006	n_steps=2286	n_ramp=0	triangular=0	est_us=8999982	line=PLAN,7,AZ,2286,0,45006,5000,TRAP,8999982
-plan	axis=AZ	pos_steps=0	delta_mdeg=-45000	speed_mdps=5000	result=limit	steps=-2286	from_mdeg=0	to_mdeg=-45006	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=AZ	pos_steps=4571	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=2286	from_mdeg=89992	to_mdeg=134997	n_steps=2286	n_ramp=0	triangular=0	est_us=8999982	line=PLAN,7,AZ,2286,89992,134997,5000,TRAP,8999982
-plan	axis=AZ	pos_steps=2286	delta_mdeg=180000	speed_mdps=5000	result=ok	steps=9143	from_mdeg=45006	to_mdeg=225008	n_steps=9143	n_ramp=0	triangular=0	est_us=35995991	line=PLAN,7,AZ,9143,45006,225008,5000,TRAP,35995991
-plan	axis=AZ	pos_steps=0	delta_mdeg=180000	speed_mdps=90000	result=ok	steps=9143	from_mdeg=0	to_mdeg=180003	n_steps=9143	n_ramp=4558	triangular=0	est_us=3783116	line=PLAN,7,AZ,9143,0,180003,90000,TRAP,3783116
-plan	axis=AZ	pos_steps=0	delta_mdeg=360000	speed_mdps=90000	result=ok	steps=18286	from_mdeg=0	to_mdeg=360006	n_steps=18286	n_ramp=4558	triangular=0	est_us=5776290	line=PLAN,7,AZ,18286,0,360006,90000,TRAP,5776290
-plan	axis=AZ	pos_steps=0	delta_mdeg=2000	speed_mdps=90000	result=ok	steps=102	from_mdeg=0	to_mdeg=2008	n_steps=102	n_ramp=51	triangular=1	est_us=257222	line=PLAN,7,AZ,102,0,2008,90000,TRI,257222
-plan	axis=AZ	pos_steps=0	delta_mdeg=500	speed_mdps=45000	result=ok	steps=25	from_mdeg=0	to_mdeg=492	n_steps=25	n_ramp=12	triangular=1	est_us=84012	line=PLAN,7,AZ,25,0,492,45000,TRI,84012
-plan	axis=AZ	pos_steps=0	delta_mdeg=10000	speed_mdps=100	result=ok	steps=508	from_mdeg=0	to_mdeg=10001	n_steps=508	n_ramp=0	triangular=0	est_us=100012500	line=PLAN,7,AZ,508,0,10001,100,TRAP,100012500
-plan	axis=AZ	pos_steps=0	delta_mdeg=10000	speed_mdps=90000	result=ok	steps=508	from_mdeg=0	to_mdeg=10001	n_steps=508	n_ramp=254	triangular=1	est_us=749278	line=PLAN,7,AZ,508,0,10001,90000,TRI,749278
-plan	axis=AZ	pos_steps=0	delta_mdeg=360000	speed_mdps=5000	result=ok	steps=18286	from_mdeg=0	to_mdeg=360006	n_steps=18286	n_ramp=0	triangular=0	est_us=71991982	line=PLAN,7,AZ,18286,0,360006,5000,TRAP,71991982
-plan	axis=AZ	pos_steps=18286	delta_mdeg=1000	speed_mdps=5000	result=limit	steps=51	from_mdeg=360006	to_mdeg=361010	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=AZ	pos_steps=0	delta_mdeg=-1000	speed_mdps=5000	result=limit	steps=-51	from_mdeg=0	to_mdeg=-1004	n_steps=0	n_ramp=0	triangular=0	est_us=0
+conv	dir=to_mdeg	axis=EL	steps=1	mdeg=16
+conv	dir=to_mdeg	axis=EL	steps=2	mdeg=32
+conv	dir=to_mdeg	axis=EL	steps=-1	mdeg=-16
+conv	dir=to_mdeg	axis=EL	steps=-2	mdeg=-32
+conv	dir=to_mdeg	axis=EL	steps=317	mdeg=4993
+conv	dir=to_mdeg	axis=EL	steps=508	mdeg=8001
+conv	dir=to_mdeg	axis=EL	steps=1016	mdeg=16002
+conv	dir=to_mdeg	axis=EL	steps=2286	mdeg=36005
+conv	dir=to_mdeg	axis=EL	steps=-2286	mdeg=-36005
+conv	dir=to_mdeg	axis=EL	steps=2857	mdeg=44998
+conv	dir=to_mdeg	axis=EL	steps=4571	mdeg=71993
+conv	dir=to_mdeg	axis=EL	steps=9143	mdeg=144002
+conv	dir=to_mdeg	axis=EL	steps=18286	mdeg=288005
+conv	dir=to_mdeg	axis=EL	steps=-18286	mdeg=-288005
+conv	dir=to_mdeg	axis=EL	steps=12345	mdeg=194434
+plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=4571	from_mdeg=0	to_mdeg=44996	n_steps=4571	n_ramp=0	triangular=0	est_us=8995728	line=PLAN,7,AZ,4571,0,44996,5000,TRAP,8995728
+plan	axis=AZ	pos_steps=0	delta_mdeg=-45000	speed_mdps=5000	result=limit	steps=-4571	from_mdeg=0	to_mdeg=-44996	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=AZ	pos_steps=4571	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=4571	from_mdeg=44996	to_mdeg=89992	n_steps=4571	n_ramp=0	triangular=0	est_us=8995728	line=PLAN,7,AZ,4571,44996,89992,5000,TRAP,8995728
+plan	axis=AZ	pos_steps=2286	delta_mdeg=180000	speed_mdps=5000	result=ok	steps=18286	from_mdeg=22503	to_mdeg=202506	n_steps=18286	n_ramp=0	triangular=0	est_us=35986848	line=PLAN,7,AZ,18286,22503,202506,5000,TRAP,35986848
+plan	axis=AZ	pos_steps=0	delta_mdeg=180000	speed_mdps=90000	result=ok	steps=18286	from_mdeg=0	to_mdeg=180003	n_steps=18286	n_ramp=9115	triangular=0	est_us=3776714	line=PLAN,7,AZ,18286,0,180003,90000,TRAP,3776714
+plan	axis=AZ	pos_steps=0	delta_mdeg=360000	speed_mdps=90000	result=ok	steps=36571	from_mdeg=0	to_mdeg=359996	n_steps=36571	n_ramp=9115	triangular=0	est_us=5769779	line=PLAN,7,AZ,36571,0,359996,90000,TRAP,5769779
+plan	axis=AZ	pos_steps=0	delta_mdeg=2000	speed_mdps=90000	result=ok	steps=203	from_mdeg=0	to_mdeg=1998	n_steps=203	n_ramp=101	triangular=1	est_us=255184	line=PLAN,7,AZ,203,0,1998,90000,TRI,255184
+plan	axis=AZ	pos_steps=0	delta_mdeg=500	speed_mdps=45000	result=ok	steps=51	from_mdeg=0	to_mdeg=502	n_steps=51	n_ramp=25	triangular=1	est_us=84897	line=PLAN,7,AZ,51,0,502,45000,TRI,84897
+plan	axis=AZ	pos_steps=0	delta_mdeg=10000	speed_mdps=100	result=ok	steps=1016	from_mdeg=0	to_mdeg=10001	n_steps=1016	n_ramp=0	triangular=0	est_us=100011992	line=PLAN,7,AZ,1016,0,10001,100,TRAP,100011992
+plan	axis=AZ	pos_steps=0	delta_mdeg=10000	speed_mdps=90000	result=ok	steps=1016	from_mdeg=0	to_mdeg=10001	n_steps=1016	n_ramp=508	triangular=1	est_us=747484	line=PLAN,7,AZ,1016,0,10001,90000,TRI,747484
+plan	axis=AZ	pos_steps=0	delta_mdeg=360000	speed_mdps=5000	result=ok	steps=36571	from_mdeg=0	to_mdeg=359996	n_steps=36571	n_ramp=0	triangular=0	est_us=71971728	line=PLAN,7,AZ,36571,0,359996,5000,TRAP,71971728
+plan	axis=AZ	pos_steps=18286	delta_mdeg=1000	speed_mdps=5000	result=ok	steps=102	from_mdeg=180003	to_mdeg=181007	n_steps=102	n_ramp=0	triangular=0	est_us=200736	line=PLAN,7,AZ,102,180003,181007,5000,TRAP,200736
+plan	axis=AZ	pos_steps=0	delta_mdeg=-1000	speed_mdps=5000	result=limit	steps=-102	from_mdeg=0	to_mdeg=-1004	n_steps=0	n_ramp=0	triangular=0	est_us=0
 plan	axis=AZ	pos_steps=0	delta_mdeg=1	speed_mdps=5000	result=zerosteps	steps=0	from_mdeg=0	to_mdeg=0	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=AZ	pos_steps=0	delta_mdeg=10	speed_mdps=5000	result=ok	steps=1	from_mdeg=0	to_mdeg=20	n_steps=1	n_ramp=0	triangular=0	est_us=3937	line=PLAN,7,AZ,1,0,20,5000,TRAP,3937
-plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=50	result=speed	steps=2286	from_mdeg=0	to_mdeg=45006	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=95000	result=speed	steps=2286	from_mdeg=0	to_mdeg=45006	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=AZ	pos_steps=0	delta_mdeg=400000	speed_mdps=5000	result=limit	steps=20317	from_mdeg=0	to_mdeg=399991	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=EL	pos_steps=0	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=1429	from_mdeg=0	to_mdeg=45014	n_steps=1429	n_ramp=0	triangular=0	est_us=9002700	line=PLAN,7,EL,1429,0,45014,5000,TRAP,9002700
-plan	axis=EL	pos_steps=0	delta_mdeg=10000	speed_mdps=5000	result=ok	steps=317	from_mdeg=0	to_mdeg=9986	n_steps=317	n_ramp=0	triangular=0	est_us=1997100	line=PLAN,7,EL,317,0,9986,5000,TRAP,1997100
-plan	axis=EL	pos_steps=0	delta_mdeg=-10000	speed_mdps=5000	result=limit	steps=-317	from_mdeg=0	to_mdeg=-9986	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=EL	pos_steps=1428	delta_mdeg=20000	speed_mdps=30000	result=limit	steps=635	from_mdeg=44982	to_mdeg=64985	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=EL	pos_steps=0	delta_mdeg=50000	speed_mdps=5000	result=limit	steps=1587	from_mdeg=0	to_mdeg=49991	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=AZ	pos_steps=0	delta_mdeg=10	speed_mdps=5000	result=ok	steps=1	from_mdeg=0	to_mdeg=10	n_steps=1	n_ramp=0	triangular=0	est_us=1968	line=PLAN,7,AZ,1,0,10,5000,TRAP,1968
+plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=50	result=speed	steps=4571	from_mdeg=0	to_mdeg=44996	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=AZ	pos_steps=0	delta_mdeg=45000	speed_mdps=95000	result=speed	steps=4571	from_mdeg=0	to_mdeg=44996	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=AZ	pos_steps=0	delta_mdeg=400000	speed_mdps=5000	result=limit	steps=40635	from_mdeg=0	to_mdeg=400001	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=EL	pos_steps=0	delta_mdeg=45000	speed_mdps=5000	result=ok	steps=2857	from_mdeg=0	to_mdeg=44998	n_steps=2857	n_ramp=0	triangular=0	est_us=8999550	line=PLAN,7,EL,2857,0,44998,5000,TRAP,8999550
+plan	axis=EL	pos_steps=0	delta_mdeg=10000	speed_mdps=5000	result=ok	steps=635	from_mdeg=0	to_mdeg=10001	n_steps=635	n_ramp=0	triangular=0	est_us=2000250	line=PLAN,7,EL,635,0,10001,5000,TRAP,2000250
+plan	axis=EL	pos_steps=0	delta_mdeg=-10000	speed_mdps=5000	result=limit	steps=-635	from_mdeg=0	to_mdeg=-10001	n_steps=0	n_ramp=0	triangular=0	est_us=0
+plan	axis=EL	pos_steps=1428	delta_mdeg=20000	speed_mdps=30000	result=ok	steps=1270	from_mdeg=22491	to_mdeg=42494	n_steps=1270	n_ramp=635	triangular=1	est_us=1335316	line=PLAN,7,EL,1270,22491,42494,30000,TRI,1335316
+plan	axis=EL	pos_steps=0	delta_mdeg=50000	speed_mdps=5000	result=limit	steps=3175	from_mdeg=0	to_mdeg=50006	n_steps=0	n_ramp=0	triangular=0	est_us=0
 plan	axis=EL	pos_steps=0	delta_mdeg=1	speed_mdps=5000	result=zerosteps	steps=0	from_mdeg=0	to_mdeg=0	n_steps=0	n_ramp=0	triangular=0	est_us=0
-plan	axis=EL	pos_steps=0	delta_mdeg=45000	speed_mdps=90000	result=ok	steps=1429	from_mdeg=0	to_mdeg=45014	n_steps=1429	n_ramp=714	triangular=1	est_us=2143893	line=PLAN,7,EL,1429,0,45014,90000,TRI,2143893
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=1	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=1143	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=2284	interval_us=3937
-interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=2285	interval_us=3937
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=0	interval_us=3937
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=1	interval_us=3804
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=4557	interval_us=218
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=4558	interval_us=218
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=4571	interval_us=218
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=9141	interval_us=3804
-interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=9142	interval_us=3937
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=0	interval_us=3937
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=1	interval_us=3804
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=50	interval_us=1847
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=51	interval_us=1847
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=51	interval_us=1847
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=100	interval_us=3804
-interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=101	interval_us=3937
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=1	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=254	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=506	interval_us=196875
-interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=507	interval_us=196875
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=0	interval_us=6300
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1	interval_us=6074
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=713	interval_us=850
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=714	interval_us=849
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=714	interval_us=849
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1427	interval_us=6074
-interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1428	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=1	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=317	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=633	interval_us=6300
-interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=634	interval_us=6300
+plan	axis=EL	pos_steps=0	delta_mdeg=45000	speed_mdps=90000	result=ok	steps=2857	from_mdeg=0	to_mdeg=44998	n_steps=2857	n_ramp=1428	triangular=1	est_us=2139970	line=PLAN,7,EL,2857,0,44998,90000,TRI,2139970
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=1	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=0	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=2285	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=4569	interval_us=1968
+interval	axis=AZ	delta_mdeg=45000	speed_mdps=5000	i=4570	interval_us=1968
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=0	interval_us=1968
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=1	interval_us=1934
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=9114	interval_us=109
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=9115	interval_us=109
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=9143	interval_us=109
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=18284	interval_us=1934
+interval	axis=AZ	delta_mdeg=180000	speed_mdps=90000	i=18285	interval_us=1968
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=0	interval_us=1968
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=1	interval_us=1934
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=100	interval_us=923
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=101	interval_us=920
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=101	interval_us=920
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=201	interval_us=1934
+interval	axis=AZ	delta_mdeg=2000	speed_mdps=90000	i=202	interval_us=1968
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=1	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=0	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=508	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=1014	interval_us=98437
+interval	axis=AZ	delta_mdeg=10000	speed_mdps=100	i=1015	interval_us=98437
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=0	interval_us=3150
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1	interval_us=3092
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1427	interval_us=424
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1428	interval_us=424
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=1428	interval_us=424
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=2855	interval_us=3092
+interval	axis=EL	delta_mdeg=45000	speed_mdps=45000	i=2856	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=1	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=0	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=635	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=1268	interval_us=3150
+interval	axis=EL	delta_mdeg=20000	speed_mdps=5000	i=1269	interval_us=3150
 reply	kind=ack	id=7	verb=MOVE	line=ACK,7,MOVE
 reply	kind=ack	id=1	verb=STOP	line=ACK,1,STOP
 reply	kind=ack	id=2	verb=ESTOP	line=ACK,2,ESTOP
@@ -270,18 +270,18 @@ cmd	err=syntax	verb=NONE	id=0	axis=NONE	mdps=0	mdeg=0	has_mdeg=0	gpio=0	level=0	
 cmd	err=syntax	verb=NONE	id=0	axis=NONE	mdps=0	mdeg=0	has_mdeg=0	gpio=0	level=0	line=POS,1,2
 cmd	err=verb	verb=NONE	id=0	axis=NONE	mdps=0	mdeg=0	has_mdeg=0	gpio=0	level=0	line= PING,1
 cmd	err=syntax	verb=NONE	id=0	axis=NONE	mdps=0	mdeg=0	has_mdeg=0	gpio=0	level=0	line=PING,1 
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,7,MOVE	line2=PLAN,7,AZ,2286,0,45006,5000,TRAP,8999982	cmd=MOVE,7,AZ,5000,45000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=EL	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,8,MOVE	line2=PLAN,8,EL,317,0,9986,5000,TRAP,1997100	cmd=MOVE,8,EL,5000,10000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,9,limit,AZ,-45006,0,360000	line2=	cmd=MOVE,9,AZ,5000,-45000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,399991,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,7,MOVE	line2=PLAN,7,AZ,4571,0,44996,5000,TRAP,8995728	cmd=MOVE,7,AZ,5000,45000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=EL	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,8,MOVE	line2=PLAN,8,EL,635,0,10001,5000,TRAP,2000250	cmd=MOVE,8,EL,5000,10000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,9,limit,AZ,-44996,0,360000	line2=	cmd=MOVE,9,AZ,5000,-45000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,400001,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,11,speed,AZ	line2=	cmd=MOVE,11,AZ,50,1000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,12,zerosteps,AZ	line2=	cmd=MOVE,12,AZ,5000,1
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,13,axis,	line2=	cmd=MOVE,13,ZZ,5000,1000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,14,STOP	line2=	cmd=STOP,14
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,15,ESTOP	line2=	cmd=ESTOP,15
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=1	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,16,ZERO	line2=	cmd=ZERO,16,ALL
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=4571	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-317	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=9143	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-635	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=POS,19,0,0,0,0,ZEROED	line2=	cmd=POS,19
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=LIM,20,0,360000,0,45000,100,90000	line2=	cmd=LIMITS,20
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=PONG,21,gs_motor,abc1234,12345	line2=	cmd=PING,21
@@ -304,8 +304,8 @@ decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,14,STOP	line2=	cmd=STOP,14
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,15,ESTOP	line2=	cmd=ESTOP,15
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=1	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,16,ZERO	line2=	cmd=ZERO,16,ALL
-decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=4571	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
-decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-317	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
+decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=9143	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
+decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-635	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=POS,19,0,0,0,0,UNZEROED	line2=	cmd=POS,19
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=LIM,20,0,360000,0,45000,100,90000	line2=	cmd=LIMITS,20
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=PONG,21,gs_motor,abc1234,12345	line2=	cmd=PING,21
@@ -318,18 +318,18 @@ decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,28,gpio,	line2=	cmd=PIN,28,99,1
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,0,verb,	line2=	cmd=WOBBLE,29
 decide	busy=0	az_zeroed=0	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,0,syntax,	line2=	cmd=MOVE,30,AZ
-decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,7,MOVE	line2=PLAN,7,AZ,2286,0,45006,5000,TRAP,8999982	cmd=MOVE,7,AZ,5000,45000
+decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,7,MOVE	line2=PLAN,7,AZ,4571,0,44996,5000,TRAP,8995728	cmd=MOVE,7,AZ,5000,45000
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,8,nozero,EL	line2=	cmd=MOVE,8,EL,5000,10000
-decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,9,limit,AZ,-45006,0,360000	line2=	cmd=MOVE,9,AZ,5000,-45000
-decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,399991,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
+decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,9,limit,AZ,-44996,0,360000	line2=	cmd=MOVE,9,AZ,5000,-45000
+decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,400001,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,11,speed,AZ	line2=	cmd=MOVE,11,AZ,50,1000
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,12,zerosteps,AZ	line2=	cmd=MOVE,12,AZ,5000,1
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,13,axis,	line2=	cmd=MOVE,13,ZZ,5000,1000
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,14,STOP	line2=	cmd=STOP,14
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,15,ESTOP	line2=	cmd=ESTOP,15
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=1	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,16,ZERO	line2=	cmd=ZERO,16,ALL
-decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=4571	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
-decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-317	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
+decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=9143	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
+decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-635	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=POS,19,0,0,0,0,UNZEROED	line2=	cmd=POS,19
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=LIM,20,0,360000,0,45000,100,90000	line2=	cmd=LIMITS,20
 decide	busy=0	az_zeroed=1	el_zeroed=0	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=PONG,21,gs_motor,abc1234,12345	line2=	cmd=PING,21
@@ -366,19 +366,19 @@ decide	busy=1	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12
 decide	busy=1	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,28,gpio,	line2=	cmd=PIN,28,99,1
 decide	busy=1	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,0,verb,	line2=	cmd=WOBBLE,29
 decide	busy=1	az_zeroed=1	el_zeroed=1	az_pos_steps=0	el_pos_steps=0	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,0,syntax,	line2=	cmd=MOVE,30,AZ
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,7,limit,AZ,399381,0,360000	line2=	cmd=MOVE,7,AZ,5000,45000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,8,limit,EL,54086,0,45000	line2=	cmd=MOVE,8,EL,5000,10000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,9,MOVE	line2=PLAN,9,AZ,-2286,354375,309369,5000,TRAP,8999982	cmd=MOVE,9,AZ,5000,-45000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,754366,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,7,MOVE	line2=PLAN,7,AZ,4571,177188,222183,5000,TRAP,8995728	cmd=MOVE,7,AZ,5000,45000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=startmove	axis=EL	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,8,MOVE	line2=PLAN,8,EL,635,22050,32051,5000,TRAP,2000250	cmd=MOVE,8,EL,5000,10000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=startmove	axis=AZ	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,9,MOVE	line2=PLAN,9,AZ,-4571,177188,132192,5000,TRAP,8995728	cmd=MOVE,9,AZ,5000,-45000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,10,limit,AZ,577188,0,360000	line2=	cmd=MOVE,10,AZ,5000,400000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,11,speed,AZ	line2=	cmd=MOVE,11,AZ,50,1000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,12,zerosteps,AZ	line2=	cmd=MOVE,12,AZ,5000,1
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ERR,13,axis,	line2=	cmd=MOVE,13,ZZ,5000,1000
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,14,STOP	line2=	cmd=STOP,14
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,15,ESTOP	line2=	cmd=ESTOP,15
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=1	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,16,ZERO	line2=	cmd=ZERO,16,ALL
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=4571	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-317	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
-decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=POS,19,354375,44100,18000,1400,ZEROED	line2=	cmd=POS,19
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setzero	axis=NONE	zero_az=1	zero_el=0	az_steps=9143	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,17,ZERO	line2=	cmd=ZERO,17,AZ,90000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setzero	axis=NONE	zero_az=0	zero_el=1	az_steps=0	el_steps=-635	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=ACK,18,ZERO	line2=	cmd=ZERO,18,EL,-10000
+decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=POS,19,177188,22050,18000,1400,ZEROED	line2=	cmd=POS,19
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=LIM,20,0,360000,0,45000,100,90000	line2=	cmd=LIMITS,20
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=nothing	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=0	level=0	clear_az_zero=0	clear_el_zero=0	line1=PONG,21,gs_motor,abc1234,12345	line2=	cmd=PING,21
 decide	busy=0	az_zeroed=1	el_zeroed=1	az_pos_steps=18000	el_pos_steps=1400	uptime_ms=12345	act=setpin	axis=NONE	zero_az=0	zero_el=0	az_steps=0	el_steps=0	gpio=13	level=1	clear_az_zero=0	clear_el_zero=0	line1=PIN,22,13,1	line2=	cmd=PIN,22,13,1

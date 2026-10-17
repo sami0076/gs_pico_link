@@ -72,25 +72,38 @@ constexpr int32_t V_START_MDPS = 5000;  // 5 deg/sec
 // ----------------------------------------------------------------------------
 // Azimuth (the board calls it Servo 1)
 // ----------------------------------------------------------------------------
-// Where 3200/63 comes from:
+// Where 6400/63 comes from:
 //
-//   driver pulses per motor rev            800        (CL57TE DIP switches)
+//   driver pulses per motor rev           1600        (CL57TE DIP switches)
 //   gearbox                              10 : 1       (planetary)
 //   final gear pair                      32 : 14      (= 16/7)
 //   -> gear ratio                        160/7 : 1    (22.857 : 1)
 //
-//   steps per output rev    = 800 * 160/7 = 128000/7
-//   steps per output degree = 128000/7/360 = 3200/63 = 50.7937...
+//   steps per output rev    = 1600 * 160/7 = 256000/7
+//   steps per output degree = 256000/7/360 = 6400/63 = 101.5873...
 //
-// Count the gear teeth yourself before trusting this. If a gear was swapped,
-// every angle in the test data will be wrong by the same factor.
+// THE 1600 IS A SWITCH SETTING, AND IT IS THE ONE NUMBER HERE THAT NOTHING
+// IN SOFTWARE CAN CHECK. It is DIP switches 1-4 on each driver, which the
+// CL57T manual's table reads as:
+//
+//   1600 pulses/rev (microstep 8)   SW1 on   SW2 off  SW3 on   SW4 on
+//    800 pulses/rev (microstep 4)   SW1 off  SW2 on   SW3 on   SW4 on
+//
+// The boxes on this machine are set to 1600, checked by eye at the bench on
+// 17 Oct 2026, and these numbers follow the hardware rather than the other
+// way round. If a driver is ever swapped or reset, check this first: get it
+// wrong and every angle is out by a clean factor of two, the Pico reports
+// the angle it meant to turn, and nothing anywhere will contradict it.
+//
+// Count the gear teeth yourself too. If a gear was swapped, every angle in
+// the test data will be wrong by the same factor.
 // Acceleration is deliberately low to begin with. Nobody has measured the
 // supply voltage or the driver's current setting yet, and both limit how hard
 // the motor can actually push. 45 deg/sec/sec still reaches the top speed of
 // 90 deg/sec in two seconds. Raise it once the machine has run.
 constexpr AxisSpec AZ_SPEC = {
-    3200,   // steps_num
-    63,     // steps_den     -> 50.7937 steps per degree
+    6400,   // steps_num
+    63,     // steps_den     -> 101.5873 steps per degree
     0,      // min_mdeg      0 degrees
     360000, // max_mdeg      360 degrees, one full turn
     false,  // invert_dir    unverified - see the bring-up notes
@@ -102,7 +115,7 @@ constexpr AxisSpec AZ_SPEC = {
 // Elevation (the board calls it Servo 2)
 // ----------------------------------------------------------------------------
 //   final gear pair  20 : 14 (= 10/7)  ->  gear ratio 100/7 : 1 (14.286 : 1)
-//   steps per output degree = 800 * 100/7 / 360 = 2000/63 = 31.746...
+//   steps per output degree = 1600 * 100/7 / 360 = 4000/63 = 63.492...
 //
 // The travel limit here is deliberately tighter than the real mechanism.
 // The documented range is -10 to +90 degrees, but nobody has measured where
@@ -114,8 +127,8 @@ constexpr AxisSpec AZ_SPEC = {
 // Elevation accelerates at half the azimuth rate. It lifts a gravity-loaded
 // mass and has less gear reduction to help it, so it has the harder job.
 constexpr AxisSpec EL_SPEC = {
-    2000,   // steps_num
-    63,     // steps_den     -> 31.746 steps per degree
+    4000,   // steps_num
+    63,     // steps_den     -> 63.492 steps per degree
     0,      // min_mdeg      0 degrees   (conservative; real limit is -10)
     45000,  // max_mdeg      45 degrees  (conservative; real limit is +90)
     false,  // invert_dir    unverified - expect this one to need flipping

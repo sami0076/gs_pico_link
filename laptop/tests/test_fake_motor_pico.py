@@ -193,11 +193,11 @@ def test_a_whole_move_arrives_in_order(link):
     kinds = [type(r).__name__ for r in seen if not isinstance(r, p.Info)]
     assert kinds.index("Ack") < kinds.index("Plan") < kinds.index("Done")
 
-    assert plan.steps == 2286
-    assert plan.to_mdeg == 45006  # the quantised angle, not 45.000
+    assert plan.steps == 4571
+    assert plan.to_mdeg == 44996  # the quantised angle, not 45.000
     assert done.id == 2
     assert done.ok is True
-    assert done.steps_done == 2286
+    assert done.steps_done == 4571
 
 
 def test_the_position_sticks_after_the_move(link):
@@ -207,7 +207,7 @@ def test_the_position_sticks_after_the_move(link):
 
     send(link, p.pos(3))
     pos = expect(link, p.Pos)
-    assert pos.az_steps == 508  # 10 degrees of azimuth
+    assert pos.az_steps == 1016  # 10 degrees of azimuth
     assert pos.zeroed is True
 
 
@@ -240,7 +240,7 @@ def test_closing_and_reopening_does_not_lose_the_position(pico):
     try:
         send(again, p.pos(3))
         pos = expect(again, p.Pos)
-        assert pos.az_steps == 508
+        assert pos.az_steps == 1016
         assert pos.zeroed is True
     finally:
         again.close()

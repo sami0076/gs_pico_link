@@ -33,9 +33,11 @@ int32_t mdeg_to_steps(const AxisSpec &axis, int32_t mdeg)
 {
     // steps = mdeg/1000 * steps_num/steps_den, rearranged to divide only once.
     //
-    // int64 because the top can get large: a full 360 deg turn of azimuth is
-    // 360000 * 3200 = 1.15 billion, which is close enough to the int32 ceiling
-    // to be worth not thinking about.
+    // int64 because the top gets genuinely too big: a full 360 deg turn of
+    // azimuth is 360000 * 6400 = 2.3 billion, which is past the int32
+    // ceiling of 2.15 billion. In int32 this would silently come out
+    // negative. It was merely close before the drivers went to 1600 pulses
+    // per turn; now it is over the line, so the int64 is load-bearing.
     const int64_t top    = static_cast<int64_t>(mdeg) * axis.steps_num;
     const int64_t bottom = static_cast<int64_t>(axis.steps_den) * 1000;
     return static_cast<int32_t>(div_round(top, bottom));
