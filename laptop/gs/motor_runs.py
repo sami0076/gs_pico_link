@@ -95,11 +95,13 @@ def _take_reading(console, row, result: RunResult) -> bool:
         return False
     if answer:
         try:
-            console.log.set_true(float(answer), row.row)
+            entry = console.log.set_true(float(answer), row.row)
         except ValueError:
             console.say(
                 f"         {answer!r} is not a number - row left blank"
             )
+        else:
+            console.report_reading(entry, indent="         ")
     return True
 
 

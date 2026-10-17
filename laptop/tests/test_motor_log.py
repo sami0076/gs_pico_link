@@ -324,3 +324,35 @@ def test_a_note_can_name_its_row(tmp_path):
     rows = read_back(path)
     assert rows[0]["note"] == "first one only"
     assert rows[1]["note"] == ""
+
+
+# ============================================================================
+# Querying a reading that looks wrong
+# ============================================================================
+
+
+def test_a_reading_far_from_the_prediction_is_queried(tmp_path):
+    # The protractor gives where the antenna is, not how far it just
+    # moved. Those are the same number on the first move of a run and
+    # nowhere near it afterwards, which makes it an easy mistake to make
+    # and a silent one to live with.
+    path = tmp_path / "bench.csv"
+    _, text = run(
+        "zero all",
+        "move az 20 20",
+        "true 20.1",
+        "move az 20 20",
+        "true 19.9",  # meant 40-ish: typed how far it moved
+        log_path=path,
+    )
+
+    assert "that is a long way out" in text
+    assert "not how far it just moved" in text
+    # Still recorded: a surprising measurement is still a measurement.
+    assert read_back(path)[1]["true_deg"] == "19.900"
+
+
+def test_a_reading_close_to_the_prediction_is_not_queried(tmp_path):
+    path = tmp_path / "bench.csv"
+    _, text = run("zero all", "move az 20 20", "true 20.1", log_path=path)
+    assert "a long way out" not in text

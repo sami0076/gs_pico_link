@@ -47,6 +47,12 @@ from gs import session as sn
 
 PROMPT = "motor> "
 
+# A protractor reading further than this from the predicted angle is
+# probably not a measurement of the same thing. The usual cause is typing
+# how far it moved instead of where it ended up - the two are the same
+# number on the first move of a run and nowhere near it after that.
+READING_WARN_DEG = 5.0
+
 HELP_TEXT = """\
   move <az|el> <deg/s> <degrees>   turn an axis, + or -
   zero [az|el|all] [degrees]       say where it is now
@@ -442,11 +448,26 @@ class Console:
         except motor_log.LogError as exc:
             raise UsageError(str(exc)) from None
 
+        self.report_reading(entry)
+
+    def report_reading(self, entry, indent: str = "  ") -> None:
+        """Say what was recorded, and query it if it looks unlikely.
+
+        Recorded either way - a surprising measurement is still a
+        measurement, and this is a question rather than a correction.
+        """
         self.say(
-            f"  row {entry.row}: measured {p.format_mdeg(entry.true_mdeg)}, "
-            f"predicted {p.format_mdeg(entry.predicted_mdeg)}, "
-            f"out by {p.format_mdeg(entry.error_mdeg)} deg"
+            f"{indent}row {entry.row}: measured "
+            f"{p.format_mdeg(entry.true_mdeg)}, predicted "
+            f"{p.format_mdeg(entry.predicted_mdeg)}, out by "
+            f"{p.format_mdeg(entry.error_mdeg)} deg"
         )
+        if abs(entry.error_mdeg) > p.deg_to_mdeg(READING_WARN_DEG):
+            self.say(
+                f"{indent}that is a long way out. The reading wanted is "
+                f"where the antenna is now, not how far it just moved. "
+                f"Retype it with 'true {entry.row} <degrees>' if that was it."
+            )
 
     def do_note(self, args: list[str]) -> None:
         log = self._need_log()
