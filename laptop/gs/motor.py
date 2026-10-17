@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import sys
 
+from gs import motor_log
 from gs import protocol as p
 from gs import session as sn
 
@@ -54,6 +55,9 @@ HELP_TEXT = """\
   pin <gpio> <0|1>                 set a spare pin, for a meter
   ping                             is it there, and how long up
   limits                           what it was built with
+  true [row] <degrees>             what the protractor really reads
+  note [row] <text>                write a note against a row
+  rows [n]                         show the last n rows of the table
   verbose [on|off]                 show the heartbeat
   help                             this
   quit                             leave
@@ -97,9 +101,16 @@ class Console:
     tests can read back everything it said.
     """
 
-    def __init__(self, session: sn.Session, out=None, verbose: bool = False):
+    def __init__(
+        self,
+        session: sn.Session,
+        out=None,
+        verbose: bool = False,
+        log: motor_log.MoveLog | None = None,
+    ):
         self.session = session
         self.verbose = verbose
+        self.log = log
         self._out = out if out is not None else sys.stdout
         self.quit = False
 
@@ -238,6 +249,11 @@ class Console:
 
         outcome = sn.MoveOutcome(plan, done)
         self.report_move(outcome)
+
+        if self.log is not None:
+            row = self.log.add(outcome, commanded_deg=delta_deg)
+            self.say(f"         row {row.row} - type 'true <degrees>' "
+                     f"once you have read the protractor")
         return outcome
 
     def _wait_out(self, plan: p.Plan):
@@ -280,6 +296,67 @@ class Console:
         )
         self.say(f"         now at {p.format_mdeg(done.to_mdeg)} deg")
 
+    # --- the results table --------------------------------------------------
+
+    def _need_log(self) -> motor_log.MoveLog:
+        if self.log is None:
+            raise UsageError(
+                "no results file is open. Start again with --log"
+            )
+        return self.log
+
+    def do_true(self, args: list[str]) -> None:
+        """Record what the protractor actually read."""
+        log = self._need_log()
+        if not args or len(args) > 2:
+            raise UsageError("true [row] <degrees>")
+
+        if len(args) == 2:
+            row = int(_number(args[0], "row"))
+            deg = _number(args[1], "angle")
+        else:
+            row, deg = None, _number(args[0], "angle")
+
+        try:
+            entry = log.set_true(deg, row)
+        except motor_log.LogError as exc:
+            raise UsageError(str(exc)) from None
+
+        self.say(
+            f"  row {entry.row}: measured {p.format_mdeg(entry.true_mdeg)}, "
+            f"predicted {p.format_mdeg(entry.predicted_mdeg)}, "
+            f"out by {p.format_mdeg(entry.error_mdeg)} deg"
+        )
+
+    def do_note(self, args: list[str]) -> None:
+        log = self._need_log()
+        if not args:
+            raise UsageError("note [row] <text>")
+
+        row = None
+        if len(args) > 1 and _looks_like_a_number(args[0]):
+            row = int(_number(args[0], "row"))
+            args = args[1:]
+
+        try:
+            entry = log.annotate(" ".join(args), row)
+        except motor_log.LogError as exc:
+            raise UsageError(str(exc)) from None
+        self.say(f"  noted against row {entry.row}")
+
+    def do_rows(self, args: list[str]) -> None:
+        log = self._need_log()
+        count = int(_number(args[0], "count")) if args else 10
+        if not log.rows:
+            self.say("  nothing logged yet")
+            return
+        for entry in log.rows[-count:]:
+            self.say(entry.summary())
+        missing = log.missing_readings()
+        if missing:
+            numbers = ", ".join(str(r.row) for r in missing)
+            self.say(f"  still waiting on a reading for row {numbers}")
+
     # --- the loop -----------------------------------------------------------
 
     COMMANDS = {
@@ -291,6 +368,9 @@ class Console:
         "pin": do_pin,
         "ping": do_ping,
         "limits": do_limits,
+        "true": do_true,
+        "note": do_note,
+        "rows": do_rows,
         "verbose": do_verbose,
         "help": do_help,
         "?": do_help,
@@ -382,6 +462,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="list the serial ports and exit",
     )
     parser.add_argument(
+        "--log",
+        nargs="?",
+        const="",
+        metavar="FILE",
+        help="write the results table to this CSV as the test runs. "
+        "Give --log with no name for a dated one in the current folder",
+    )
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="show the heartbeat as it arrives",
@@ -446,15 +534,56 @@ def main(argv: list[str] | None = None, stdin=None, out=None) -> int:
         # again here would show the whole banner twice.
         session.drain_until_quiet()
 
+        # One PING before anything else. It proves the link works rather
+        # than letting the first real command be the thing that discovers
+        # it does not, and it names what answered - which goes in every
+        # row of the results table, so a simulated run cannot be mistaken
+        # for a real one later.
+        who = ""
+        try:
+            pong = session.ping()
+            who = f"{pong.target} {pong.version}"
+            print(f"connected: {who}", file=stream)
+        except sn.SessionError as exc:
+            print(f"warning: no answer to PING ({exc})", file=stream)
+
+        if args.log is not None:
+            path = args.log or motor_log.default_name()
+            console.log = motor_log.MoveLog(path=path, pico=who)
+            console.log.write()  # so the file exists from the start
+            print(f"logging to {path}", file=stream)
+
         if args.command:
             for text in args.command:
                 console.say(f"{PROMPT}{text}")
                 console.run_line(text)
         else:
             console.interact(stdin)
+
+        _warn_about_blanks(console, stream)
     finally:
         session.close()
     return 0
+
+
+def _warn_about_blanks(console: Console, stream) -> None:
+    """Say so before anyone packs up.
+
+    A missing protractor reading is not a gap that can be filled in
+    later from anywhere - the antenna has moved on.
+    """
+    if console.log is None:
+        return
+    missing = console.log.missing_readings()
+    if missing:
+        numbers = ", ".join(str(r.row) for r in missing)
+        print("", file=stream)
+        print(
+            f"{len(missing)} move(s) have no protractor reading: "
+            f"row {numbers}",
+            file=stream,
+        )
+    print(f"results in {console.log.path}", file=stream)
 
 
 if __name__ == "__main__":
