@@ -1,8 +1,15 @@
 r"""The pretend Pico, served over a socket so the real code can talk to it.
 
-`motor_sim.py` is the behaviour; this is the plug. It listens on a TCP port
-and speaks the motor protocol down it, so anything that opens a serial port
-can open this instead:
+`motor_sim.py` is the behaviour; this is the plug. There are two of them.
+
+`FakePico` listens on a TCP port and speaks the motor protocol down it, so
+anything that opens a serial port can open this instead. `LoopbackLink`,
+further down, skips the socket and hands the simulator straight to a
+Session, which is what `--dry-run` uses: no second terminal, and no
+pyserial needed at all.
+
+The socket one exists so that the real pyserial path gets exercised rather
+than quietly bypassed:
 
     py -m gs.fake_motor_pico          # in one terminal
     ... --port socket://localhost:7777
@@ -184,6 +191,95 @@ class FakePico:
     def _say(self, message: str) -> None:
         if self._log is not None:
             self._log(message)
+
+
+class LoopbackLink:
+    """The simulator wired straight to a Session, with no socket at all.
+
+    This is what `--dry-run` uses. The socket server above exists so that
+    the real pyserial path gets exercised; this exists so the whole CLI
+    runs on a laptop with no pyserial installed and no second terminal
+    open. It answers to the few things a Session asks of a port - read,
+    write, close - and nothing else.
+
+    `scale` winds the clock forward the same way the server's `--fast`
+    does, so the tests can run a nine second move in nine milliseconds.
+    """
+
+    def __init__(
+        self,
+        sim: MotorSim | None = None,
+        scale: float = 1.0,
+        timeout: float = 0.05,
+    ) -> None:
+        if scale <= 0:
+            raise ValueError("scale must be greater than zero")
+
+        self.sim = sim if sim is not None else MotorSim()
+        self.scale = scale
+        self.timeout = timeout
+
+        self._t0 = time.monotonic()
+        self._out = bytearray()
+        self._closed = False
+
+        # Opening a port is what makes the Pico print its banner.
+        self._queue(self.sim.banner())
+
+    # --- the clock ---------------------------------------------------------
+
+    def now_us(self) -> int:
+        return int((time.monotonic() - self._t0) * 1_000_000 * self.scale)
+
+    # --- what a Session needs ---------------------------------------------
+
+    @property
+    def in_waiting(self) -> int:
+        self._pump()
+        return len(self._out)
+
+    def write(self, data: bytes) -> int:
+        self._check_open()
+        self._queue(self.sim.feed(bytes(data), self.now_us()))
+        return len(data)
+
+    def read(self, size: int = 1) -> bytes:
+        """Up to `size` bytes, waiting up to `timeout` for some to appear.
+
+        Returning empty on a quiet line is what a real port does, and it
+        is how the caller gets a chance to check its own deadline.
+        """
+        self._check_open()
+        deadline = time.monotonic() + self.timeout
+        while True:
+            self._pump()
+            if self._out:
+                taken = bytes(self._out[:size])
+                del self._out[:size]
+                return taken
+            if time.monotonic() >= deadline:
+                return b""
+            # Nothing to do but let time pass. Short enough to stay
+            # responsive, long enough not to spin the processor flat out.
+            time.sleep(0.001)
+
+    def flush(self) -> None:
+        pass
+
+    def close(self) -> None:
+        self._closed = True
+
+    def _check_open(self) -> None:
+        if self._closed:
+            raise OSError("the link is closed")
+
+    def _pump(self) -> None:
+        if not self._closed:
+            self._queue(self.sim.poll(self.now_us()))
+
+    def _queue(self, lines: list[str]) -> None:
+        for line in lines:
+            self._out += (line + "\n").encode("ascii", errors="replace")
 
 
 def main(argv: list[str] | None = None) -> int:
