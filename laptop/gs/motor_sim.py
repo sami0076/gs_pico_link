@@ -120,13 +120,24 @@ TARGET_NAME = "gs_motor"  # GS_TARGET_NAME, the CMake target that is flashed
 # 32-bit float arithmetic
 # ============================================================================
 # The firmware's speed maths runs in C++ `float`, which carries about seven
-# digits. Python's floats carry fifteen. Left alone the two would disagree in
-# the last digit of est_us, and the contract test would fail over a
-# difference that means nothing.
+# digits. Python's floats carry fifteen. Every arithmetic step below is
+# rounded back to 32 bits, in the order the C++ does it, so the two cannot
+# disagree.
 #
-# So every arithmetic step below is rounded back to 32 bits, in the order the
-# C++ does it. It is fussy, but it is the difference between a simulator that
-# nearly matches and one that does.
+# Honestly: no case has been found where it matters. 6000 planned moves were
+# compared with the rounding on and off - every speed and angle the firmware
+# allows, on both axes, at today's accelerations and at the higher ones 7.10
+# raises them to - and est_us, the ramp length and the step intervals came
+# out identical every time. interval_us truncates to whole microseconds, and
+# nothing in range lands close enough to a boundary for seven digits versus
+# fifteen to show.
+#
+# It stays because it is free (a plan is worked out once per move), because
+# it mirrors what the firmware actually does rather than what happens to
+# agree with it today, and because the cost if some future gearing did land
+# on a boundary is a silent one-microsecond disagreement between the two
+# ends. It is insurance, not load-bearing - do not point at it as the reason
+# the numbers match.
 
 
 def f32(x: float) -> float:
@@ -585,11 +596,22 @@ def _parse_int(text: str, lo: int, hi: int) -> int | None:
     body = text[1:] if text[0] in ("+", "-") else text
     if not body or not body.isascii() or not body.isdigit():
         return None
-    # The firmware stops before its running total can wrap into a plausible
-    # small number, so a very long run of digits is refused there too.
-    if len(body) > 10 or int(body) > 4000000000:
-        return None
-    value = int(text)
+
+    # The firmware adds up the digits as it goes and gives up once the
+    # running total passes four billion, before it could wrap round into a
+    # plausible small number. Mirrored digit by digit rather than by
+    # counting characters: leading zeros make a long string whose value is
+    # still small, and the firmware accepts those - "0000000000000001" is
+    # one, not a syntax error. The contract test pins this down; counting
+    # characters is what it caught.
+    value = 0
+    for digit in body:
+        value = value * 10 + (ord(digit) - ord("0"))
+        if value > 4000000000:
+            return None
+
+    if text[0] == "-":
+        value = -value
     if value < lo or value > hi:
         return None
     return value

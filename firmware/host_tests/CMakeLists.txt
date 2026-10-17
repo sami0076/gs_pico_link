@@ -37,3 +37,36 @@ gs_add_host_test(test_line_reader ../src/line_reader.cpp)
 gs_add_host_test(test_motor_cmd ../src/motor_cmd.cpp)
 gs_add_host_test(test_motor_reply ../src/motor_reply.cpp ../src/motor_cmd.cpp
                                   ../src/motion_profile.cpp)
+
+# ----------------------------------------------------------------------------
+# The contract with the laptop
+# ----------------------------------------------------------------------------
+# gen_motor_vectors runs the firmware's own code and writes down what it
+# produced. The file is checked into the repo because the C++ builds in WSL
+# and the Python runs on Windows, and a file that only exists in one of those
+# is no use to the other.
+#
+# Two tests, in order: write a fresh copy, then compare it with the one that
+# is checked in. A protocol change made on the C++ side and not regenerated
+# fails here, which is the point - otherwise the pytest would keep passing
+# against a file describing firmware that no longer exists.
+set(GS_VECTORS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../laptop/tests/data/motor_vectors.txt)
+
+add_executable(gen_motor_vectors gen_motor_vectors.cpp
+               ../src/motor_reply.cpp ../src/motor_cmd.cpp
+               ../src/motion_profile.cpp)
+
+add_test(NAME write_motor_vectors
+         COMMAND gen_motor_vectors
+                 ${CMAKE_CURRENT_BINARY_DIR}/motor_vectors.txt)
+
+add_test(NAME motor_vectors_are_current
+         COMMAND ${CMAKE_COMMAND} -E compare_files
+                 ${CMAKE_CURRENT_BINARY_DIR}/motor_vectors.txt
+                 ${GS_VECTORS})
+
+# compare_files only means anything once the fresh copy exists.
+set_tests_properties(write_motor_vectors PROPERTIES FIXTURES_SETUP vectors)
+set_tests_properties(motor_vectors_are_current
+                     PROPERTIES FIXTURES_REQUIRED vectors)
