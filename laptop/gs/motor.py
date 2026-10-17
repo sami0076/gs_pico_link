@@ -41,6 +41,7 @@ import argparse
 import sys
 
 from gs import motor_log
+from gs import motor_runs
 from gs import protocol as p
 from gs import session as sn
 
@@ -55,6 +56,8 @@ HELP_TEXT = """\
   pin <gpio> <0|1>                 set a spare pin, for a meter
   ping                             is it there, and how long up
   limits                           what it was built with
+  sweep [angle=45] [speeds=1,5,90] [pause]   one angle at each speed
+  random [count=10] [speed=5] [seed=N] [pause]   angles within the limits
   true [row] <degrees>             what the protractor really reads
   note [row] <text>                write a note against a row
   rows [n]                         show the last n rows of the table
@@ -87,6 +90,32 @@ def _looks_like_a_number(word: str) -> bool:
     return True
 
 
+def _options(args: list[str], allowed: set[str], flags=("pause",)):
+    """Read `name=value` arguments, plus bare words like `pause`.
+
+    The scripted runs have too many knobs to remember in order, and
+    getting the order wrong silently would mean running the wrong test.
+    """
+    values: dict[str, str] = {}
+    marks: set[str] = set()
+
+    for token in args:
+        if "=" in token:
+            key, _, value = token.partition("=")
+            key = key.strip().lower()
+            if key not in allowed:
+                known = ", ".join(sorted(allowed))
+                raise UsageError(f"no setting called {key!r}. Try: {known}")
+            values[key] = value.strip()
+        elif token.lower() in flags:
+            marks.add(token.lower())
+        else:
+            raise UsageError(
+                f"do not understand {token!r} - settings look like name=value"
+            )
+    return values, marks
+
+
 def _number(word: str, what: str) -> float:
     try:
         return float(word)
@@ -111,6 +140,9 @@ class Console:
         self.session = session
         self.verbose = verbose
         self.log = log
+        # Where `pause` reads the protractor reading from. interact()
+        # replaces it with whatever it was given.
+        self.stdin = sys.stdin
         self._out = out if out is not None else sys.stdout
         self.quit = False
 
@@ -118,6 +150,27 @@ class Console:
 
     def say(self, text: str = "") -> None:
         print(text, file=self._out)
+
+    def ask(self, question: str) -> str:
+        """Put a question to the operator and wait for the answer.
+
+        Used by the scripted runs when they pause between moves. An
+        empty answer, or no input at all, means skip it - a reading
+        nobody took is better left blank than guessed at.
+        """
+        print(question, end="", file=self._out, flush=True)
+        try:
+            line = self.stdin.readline()
+        except (KeyboardInterrupt, ValueError):
+            return ""
+        if not line:
+            return ""
+        answer = line.strip()
+        if not getattr(self.stdin, "isatty", lambda: False)():
+            # No terminal to echo it, so echo it ourselves and keep the
+            # transcript readable.
+            self.say(answer)
+        return answer
 
     def show_chatter(self, record: p.Reply) -> None:
         """Lines the Pico sends unprompted.
@@ -221,7 +274,13 @@ class Console:
 
     # --- the move itself ----------------------------------------------------
 
-    def run_move(self, axis: str, speed_dps: float, delta_deg: float):
+    def run_move(
+        self,
+        axis: str,
+        speed_dps: float,
+        delta_deg: float,
+        row_hint: bool = True,
+    ):
         """One move, start to finish, with the waiting handled.
 
         Returns the outcome so the scripted runs can log it, or None if
@@ -252,8 +311,12 @@ class Console:
 
         if self.log is not None:
             row = self.log.add(outcome, commanded_deg=delta_deg)
-            self.say(f"         row {row.row} - type 'true <degrees>' "
-                     f"once you have read the protractor")
+            # Left out when a scripted run is about to ask for the
+            # reading itself, which would otherwise print two prompts
+            # for the same number.
+            if row_hint:
+                self.say(f"         row {row.row} - type 'true <degrees>' "
+                         f"once you have read the protractor")
         return outcome
 
     def _wait_out(self, plan: p.Plan):
@@ -295,6 +358,63 @@ class Console:
             f"{done.elapsed_s:.2f} s  (predicted {outcome.plan.est_s:.2f} s)"
         )
         self.say(f"         now at {p.format_mdeg(done.to_mdeg)} deg")
+
+    # --- the scripted runs --------------------------------------------------
+
+    def do_sweep(self, args: list[str]) -> None:
+        """The same angle at a series of speeds."""
+        values, marks = _options(args, {"axis", "angle", "speeds"})
+
+        axis = _axis(values.get("axis", "az"))
+        angle = _number(
+            str(values.get("angle", motor_runs.DEFAULT_SWEEP_ANGLE_DEG)),
+            "angle",
+        )
+        if "speeds" in values:
+            speeds = [
+                _number(word, "speed")
+                for word in values["speeds"].split(",")
+                if word
+            ]
+        else:
+            speeds = list(motor_runs.DEFAULT_SWEEP_SPEEDS)
+
+        motor_runs.sweep(
+            self,
+            axis=axis,
+            angle_deg=angle,
+            speeds=speeds,
+            pause="pause" in marks,
+        )
+
+    def do_random(self, args: list[str]) -> None:
+        """Unpredictable angles inside the soft limits."""
+        values, marks = _options(args, {"axis", "count", "speed", "seed"})
+
+        axis = _axis(values.get("axis", "az"))
+        count = int(
+            _number(str(values.get("count", motor_runs.DEFAULT_RANDOM_COUNT)),
+                    "count")
+        )
+        speed = _number(
+            str(values.get("speed", motor_runs.DEFAULT_RANDOM_SPEED_DPS)),
+            "speed",
+        )
+        seed = None
+        if "seed" in values:
+            seed = int(_number(values["seed"], "seed"))
+
+        if count < 1:
+            raise UsageError("count must be at least 1")
+
+        motor_runs.random_moves(
+            self,
+            axis=axis,
+            count=count,
+            speed_dps=speed,
+            seed=seed,
+            pause="pause" in marks,
+        )
 
     # --- the results table --------------------------------------------------
 
@@ -368,6 +488,8 @@ class Console:
         "pin": do_pin,
         "ping": do_ping,
         "limits": do_limits,
+        "sweep": do_sweep,
+        "random": do_random,
         "true": do_true,
         "note": do_note,
         "rows": do_rows,
@@ -408,6 +530,7 @@ class Console:
     def interact(self, stdin=None, prompt: str = PROMPT) -> None:
         """Read lines until they run out or someone types quit."""
         stream = stdin if stdin is not None else sys.stdin
+        self.stdin = stream
         interactive = stream.isatty() if hasattr(stream, "isatty") else False
 
         while not self.quit:
@@ -552,6 +675,9 @@ def main(argv: list[str] | None = None, stdin=None, out=None) -> int:
             console.log = motor_log.MoveLog(path=path, pico=who)
             console.log.write()  # so the file exists from the start
             print(f"logging to {path}", file=stream)
+
+        if stdin is not None:
+            console.stdin = stdin
 
         if args.command:
             for text in args.command:

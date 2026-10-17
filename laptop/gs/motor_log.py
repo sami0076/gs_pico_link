@@ -34,10 +34,15 @@ from __future__ import annotations
 
 import csv
 import os
+import time
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from gs import protocol as p
+
+# How hard to try when moving the finished file into place. See write().
+REPLACE_TRIES = 5
+REPLACE_WAIT_S = 0.1
 
 # The columns, in the order they appear in the file. Changing this order
 # changes every file written afterwards, so leave it alone unless the
@@ -248,4 +253,17 @@ class MoveLog:
             writer.writeheader()
             for row in self.rows:
                 writer.writerow(row.as_record())
-        os.replace(temporary, self.path)
+
+        # On Windows the move fails if anything else has the file open
+        # for even a moment - a virus scanner, a sync client, or a
+        # spreadsheet the operator left open on the last run. Those all
+        # let go within a moment, so it is worth a few tries before
+        # giving up and losing the row that was just measured.
+        for attempt in range(REPLACE_TRIES):
+            try:
+                os.replace(temporary, self.path)
+                return
+            except PermissionError:
+                if attempt == REPLACE_TRIES - 1:
+                    raise
+                time.sleep(REPLACE_WAIT_S)

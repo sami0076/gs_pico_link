@@ -111,6 +111,13 @@ def open_port(port: str | None = None, timeout: float = 1.0):
     work. The fake Pico in a later chunk is a TCP server, and being able to
     point the same code at it is what lets the whole interface be tested
     without hardware.
+
+    One thing worth knowing: opening a port throws away anything already
+    waiting in it. pyserial clears the input buffer on open, which is the
+    right thing for a real port that may hold stale bytes, but it means
+    the Pico's startup banner can be lost if it arrived a moment too
+    early. Do not build anything on having seen the banner - ask with
+    PING, which is answered on demand.
     """
     try:
         import serial

@@ -17,6 +17,7 @@ whatever else is running on it, not because anything is expected to be slow.
 
 from __future__ import annotations
 
+import socket
 import time
 
 import pytest
@@ -70,13 +71,24 @@ def read_records(conn, want, deadline_s=DEADLINE_S):
     banner and any heartbeat come through here too, which is realistic:
     a reader has to cope with lines it did not ask for.
     """
+    # Bytes are glued back into lines here rather than leaning on
+    # readline(), which hands back whatever it has when its timeout runs
+    # out - half a line included. Under load that splits a record in two
+    # and both halves parse as nonsense. The real reader does this job in
+    # session.py; this is the same thing, kept local so these tests stay
+    # about the server rather than about the session layer.
     seen = []
+    buffer = ""
     end = time.monotonic() + deadline_s
     while time.monotonic() < end:
-        raw = conn.readline()
+        raw = conn.read(conn.in_waiting or 1)
         if not raw:
             continue
-        seen.append(p.parse_reply(raw.decode("ascii", errors="replace")))
+        buffer += raw.decode("ascii", errors="replace")
+        while "\n" in buffer:
+            line, _, buffer = buffer.partition("\n")
+            if line.strip():
+                seen.append(p.parse_reply(line))
         if want(seen):
             return seen
     raise AssertionError(
@@ -118,12 +130,29 @@ def test_the_url_is_one_pyserial_understands(pico):
     assert pico.port != 0  # the machine chose a real one
 
 
-def test_opening_it_gives_the_banner(link):
-    # Waits for the SIMULATOR line, which is the last one of the banner.
-    seen = read_records(
-        link, lambda s: any("SIMULATOR" in getattr(r, "text", "") for r in s)
-    )
-    text = " ".join(getattr(r, "text", "") for r in seen)
+def test_the_banner_is_sent_as_soon_as_a_client_connects(pico):
+    """Read with a plain socket, deliberately not through pyserial.
+
+    Opening a serial port throws away whatever is already waiting -
+    pyserial does it on open, to clear stale bytes left in a real port -
+    so a banner that arrives in the moment between connecting and
+    finishing the open is discarded. That is a property of opening a
+    port and not something the server can do anything about, so the
+    server's side of it is checked here with nothing in the way.
+
+    It is also why the prompt says what it is connected to from a PING
+    rather than from the banner.
+    """
+    with socket.create_connection((pico.host, pico.port), timeout=5) as raw:
+        raw.settimeout(5)
+        received = b""
+        while b"SIMULATOR" not in received:
+            chunk = raw.recv(4096)
+            if not chunk:
+                break
+            received += chunk
+
+    text = received.decode("ascii", errors="replace")
     assert "gs_pico_link gs_motor" in text
     assert "NOT ZEROED" in text
     # Every record is byte-for-byte what the real firmware sends, so this

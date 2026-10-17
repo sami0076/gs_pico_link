@@ -274,6 +274,12 @@ class Session:
             if record is None:
                 return seen
             seen.append(record)
+            # A heartbeat means the Pico has nothing else to say: it only
+            # sends one when nothing is moving and no line is half-read,
+            # so the banner must be finished. Waiting for silence as well
+            # would just add the quiet period to every startup.
+            if isinstance(record, p.Mstat):
+                return seen
             if self.clock() >= hard_stop:
                 return seen
 
